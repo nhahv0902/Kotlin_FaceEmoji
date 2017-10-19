@@ -14,9 +14,9 @@ import com.nhahv.faceemoji.BR
  */
 
 class BaseRecyclerAdapter<T>(
-        private val items: ArrayList<T>,
-        private val listener: OnItemListener<T>,
-        @LayoutRes val layout: Int
+    private val items: ArrayList<T>,
+    private val listener: OnItemListener<T>,
+    @LayoutRes val layout: Int
 ) : RecyclerView.Adapter<BaseRecyclerAdapter.BaseViewHolder<T>>() {
     private var mInflater: LayoutInflater? = null
 
@@ -36,7 +36,7 @@ class BaseRecyclerAdapter<T>(
 
 
     class BaseViewHolder<in T>(private val binding: ViewDataBinding,
-                               private val listener: OnItemListener<T>) : RecyclerView.ViewHolder(binding.root) {
+        private val listener: OnItemListener<T>) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: T, position: Int) {
             binding.setVariable(BR.item, item)
             binding.setVariable(BR.position, position)

@@ -1,29 +1,30 @@
 package com.nhahv.faceemoji.ui.home
 
+import android.Manifest
+import android.app.AlertDialog
+import android.arch.lifecycle.ViewModelProviders
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.view.Menu
 import android.view.MenuItem
 import com.nhahv.faceemoji.R
 import com.nhahv.faceemoji.databinding.ActivityHomeBinding
 import com.nhahv.faceemoji.ui.BaseActivity
-import kotlinx.android.synthetic.main.activity_home.*
+import com.nhahv.faceemoji.ui.ViewModelFactory
+import permissions.dispatcher.NeedsPermission
+import permissions.dispatcher.RuntimePermissions
 
-class HomeActivity : BaseActivity() {
+@RuntimePermissions
+class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
+
+    private lateinit var viewModel: HomeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProviders.of(this, ViewModelFactory.getInstance(this)).get(HomeViewModel::class.java)
         val binding: ActivityHomeBinding = DataBindingUtil.setContentView(this,
                 R.layout.activity_home)
-        setSupportActionBar(toolbar)
-
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
-
-
+        binding.viewModel = viewModel
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -36,5 +37,19 @@ class HomeActivity : BaseActivity() {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun openDialog() {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+    }
+
+    @NeedsPermission(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun openCamera() {
+    }
+
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }

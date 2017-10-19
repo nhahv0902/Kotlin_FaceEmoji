@@ -7,64 +7,73 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
-    defaultConfig {
-        applicationId "com.nhahv.faceemoji"
-        minSdkVersion 16
-        targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        dataBinding.enabled = true
+  compileSdkVersion 26
+  buildToolsVersion "26.0.2"
+  defaultConfig {
+    applicationId "com.nhahv.faceemoji"
+    minSdkVersion 16
+    targetSdkVersion 26
+    versionCode 1
+    versionName "1.0"
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    dataBinding.enabled = true
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
+  }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation "com.android.support:appcompat-v7:$compileSdk"
-    implementation "com.android.support.constraint:constraint-layout:$constraintLayout"
-    implementation "com.android.support:design:$compileSdk"
+  implementation fileTree(include: ['*.jar'], dir: 'libs')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+  implementation "com.android.support:appcompat-v7:$compileSdk"
+  implementation "com.android.support.constraint:constraint-layout:$constraintLayout"
+  implementation "com.android.support:design:$compileSdk"
 
-    // test
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+  // test
+  testImplementation 'junit:junit:4.12'
+  androidTestImplementation 'com.android.support.test:runner:1.0.1'
+  androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
-    // architecture component
-    implementation "android.arch.lifecycle:extensions:$archicture"
-    annotationProcessor "android.arch.lifecycle:compiler:$archicture"
-    implementation "android.arch.lifecycle:reactivestreams:$archicture"
-    implementation "android.arch.persistence.room:runtime:$archicture"
-    annotationProcessor "android.arch.persistence.room:compiler:$archicture"
-    implementation "android.arch.paging:runtime:$paging"
-    kapt "com.android.databinding:compiler:$dataBinding"
-    implementation "com.android.support:recyclerview-v7:$compileSdk"
+  // architecture component
+  implementation "android.arch.lifecycle:extensions:$archicture"
+  annotationProcessor "android.arch.lifecycle:compiler:$archicture"
+  implementation "android.arch.lifecycle:reactivestreams:$archicture"
+  implementation "android.arch.persistence.room:runtime:$archicture"
+  annotationProcessor "android.arch.persistence.room:compiler:$archicture"
+  implementation "android.arch.paging:runtime:$paging"
+  kapt "com.android.databinding:compiler:$dataBinding"
+  implementation "com.android.support:recyclerview-v7:$compileSdk"
 
-    // Rxjava
-    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid"
-    implementation "io.reactivex.rxjava2:rxjava:$rxJava"
-    implementation "com.google.code.gson:gson:$gson"
-    implementation "com.squareup.okhttp3:logging-interceptor:$okHttp"
+  // Rxjava
+  implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid"
+  implementation "io.reactivex.rxjava2:rxjava:$rxJava"
+  implementation "com.google.code.gson:gson:$gson"
+  implementation "com.squareup.okhttp3:logging-interceptor:$okHttp"
 
-    // retrofit
-    implementation "com.squareup.retrofit2:retrofit:$retrofit"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofit"
-    implementation "com.jakewharton.retrofit:retrofit2-rxjava2-adapter:$adapterRetrofit"
+  // retrofit
+  implementation "com.squareup.retrofit2:retrofit:$retrofit"
+  implementation "com.squareup.retrofit2:converter-gson:$retrofit"
+  implementation "com.jakewharton.retrofit:retrofit2-rxjava2-adapter:$adapterRetrofit"
 
-    // dagger 2
-    implementation "com.google.dagger:dagger:$dagger"
-    implementation "com.google.dagger:dagger-android-support:$dagger"
-    kapt "com.google.dagger:dagger-compiler:$dagger"
-    kapt "com.google.dagger:dagger-android-processor:$dagger"
+  // dagger 2
+  implementation "com.google.dagger:dagger:$dagger"
+  implementation "com.google.dagger:dagger-android-support:$dagger"
+  kapt "com.google.dagger:dagger-compiler:$dagger"
+  kapt "com.google.dagger:dagger-android-processor:$dagger"
+  implementation "com.github.bumptech.glide:glide:$glide"
+  kapt "com.github.bumptech.glide:compiler:$glide"
+
+  // request permission runtime
+  compile("com.github.hotchemi:permissionsdispatcher:${runtimePermission}") {
+    // if you don't use android.app.Fragment you can exclude support for them
+    exclude module: "support-v13"
+  }
+  annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:${runtimePermission}"
 }
 kapt {
-    generateStubs = true
+  generateStubs = true
 }

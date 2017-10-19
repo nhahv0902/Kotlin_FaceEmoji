@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools"
+    >
+
+    <data>
+
+        <variable
+            name="item"
+            type="com.nhahv.faceemoji.data.model.ItemNavigation"
+            />
+
+        <variable
+            name="position"
+            type="int"
+            />
+
+        <variable
+            name="listener"
+            type="com.nhahv.faceemoji.ui.BaseRecyclerAdapter.OnItemListener"
+            />
+
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:minWidth="80dp"
+        android:onClick="@{() -> listener.onClick(item, position)}"
+        >
+
+        <ImageView
+            android:id="@+id/icon_navigator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitCenter"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            bind:imageError="@{@drawable/icon_transform}"
+            bind:imageUrl="@{item.icon}"
+            />
+
+        <TextView
+            android:id="@+id/name_navigator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@{item.name}"
+            android:textColor="@color/text_navigator"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/icon_navigator"
+            bind:text="@string/action_settings"
+            />
+    </android.support.constraint.ConstraintLayout>
+</layout>
