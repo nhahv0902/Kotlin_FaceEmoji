@@ -43,6 +43,7 @@
             app:layout_constraintTop_toTopOf="parent"
             bind:imageError="@{@drawable/icon_transform}"
             bind:imageUrl="@{item.icon}"
+            bind:selected="@{item.isActive}"
             />
 
         <TextView
@@ -56,6 +57,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/icon_navigator"
+            bind:selected="@{item.isActive}"
             bind:text="@string/action_settings"
             />
     </android.support.constraint.ConstraintLayout>

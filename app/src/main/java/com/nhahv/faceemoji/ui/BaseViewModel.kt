@@ -1,6 +1,7 @@
 package com.nhahv.faceemoji.ui
 
 import android.arch.lifecycle.ViewModel
+import android.util.Log
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
@@ -17,5 +18,9 @@ open class BaseViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         mDisposable.clear()
+    }
+
+    fun log(message: String) {
+        Log.d("TAG", message)
     }
 }

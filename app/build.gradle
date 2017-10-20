@@ -17,6 +17,7 @@ android {
     versionName "1.0"
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     dataBinding.enabled = true
+    vectorDrawables.useSupportLibrary = true
   }
   buildTypes {
     release {
@@ -34,6 +35,7 @@ dependencies {
   implementation "com.android.support:design:$compileSdk"
 
   // test
+  implementation 'com.android.support.constraint:constraint-layout:1.0.2'
   testImplementation 'junit:junit:4.12'
   androidTestImplementation 'com.android.support.test:runner:1.0.1'
   androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
@@ -68,11 +70,11 @@ dependencies {
   kapt "com.github.bumptech.glide:compiler:$glide"
 
   // request permission runtime
-  compile("com.github.hotchemi:permissionsdispatcher:${runtimePermission}") {
+  implementation("com.github.hotchemi:permissionsdispatcher:${runtimePermission}") {
     // if you don't use android.app.Fragment you can exclude support for them
     exclude module: "support-v13"
   }
-  annotationProcessor "com.github.hotchemi:permissionsdispatcher-processor:${runtimePermission}"
+  kapt "com.github.hotchemi:permissionsdispatcher-processor:${runtimePermission}"
 }
 kapt {
   generateStubs = true

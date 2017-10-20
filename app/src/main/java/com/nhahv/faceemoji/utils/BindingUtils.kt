@@ -3,6 +3,7 @@ package com.nhahv.faceemoji.utils
 import android.databinding.BindingAdapter
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 
 /**
@@ -21,4 +22,9 @@ fun bindImage(view: ImageView, source: Int?, error: Drawable) {
     source?.let {
         view.setImageResource(source)
     }
+}
+
+@BindingAdapter("selected")
+fun bindSelected(view: View, isSelected: Boolean) {
+    view.isSelected = isSelected
 }

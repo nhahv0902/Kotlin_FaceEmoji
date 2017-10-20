@@ -1,6 +1,8 @@
 package com.nhahv.faceemoji.ui
 
 import android.annotation.SuppressLint
+import android.arch.lifecycle.ViewModel
+import android.arch.lifecycle.ViewModelProviders
 import android.support.v7.app.AppCompatActivity
 
 /**
@@ -8,5 +10,9 @@ import android.support.v7.app.AppCompatActivity
  */
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
+
+    inline fun <reified T : ViewModel> obtainViewModel(
+        viewModelClass: Class<T>) = ViewModelProviders.of(this,
+        ViewModelFactory.getInstance(this)).get(viewModelClass)
 
 }
