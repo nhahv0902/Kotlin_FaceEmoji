@@ -5,6 +5,7 @@ import com.nhahv.faceemoji.R
 /**
  * Created by nhahv on 10/19/17.
  */
+
 data class ItemNavigation(
     val icon: Int = R.drawable.icon_transform,
     var isActive: Boolean = false,

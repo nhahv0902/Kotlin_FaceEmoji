@@ -1,9 +1,16 @@
 package com.nhahv.faceemoji.networking.response
 
+import android.annotation.SuppressLint
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
 /**
  * Created by nhahv0902 on 10/17/17.
  */
-data class ErrorMessage(val message: ArrayList<String>?) {
+
+@SuppressLint("ParcelCreator")
+@Parcelize
+data class ErrorMessage(val message: ArrayList<String>?) : Parcelable {
     fun getMessage(): String {
         message?.let {
             var message = ""

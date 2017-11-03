@@ -1,7 +1,8 @@
 package com.nhahv.faceemoji
 
 import android.app.Application
-import com.adobe.creativesdk.foundation.AdobeCSDKFoundation
+
+
 
 /**
  * Created by nhahv0902 on 10/20/17.
@@ -16,7 +17,9 @@ class AppApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AdobeCSDKFoundation.initializeCSDKFoundation(applicationContext)
+//        AdobeCSDKFoundation.initializeCSDKFoundation(applicationContext)
+//        val builder = StrictMode.VmPolicy.Builder()
+//        StrictMode.setVmPolicy(builder.build())
     }
 
 }

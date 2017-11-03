@@ -6,4 +6,5 @@
     <color name="color_bg_grey_300">#E0E0E0</color>
     <color name="color_grey_72">#727272</color>
     <color name="color_grey_30">#303030</color>
+    <color name="color_background">#F2F6F8</color>
 </resources>

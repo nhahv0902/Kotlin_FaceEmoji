@@ -1,6 +1,7 @@
 package com.nhahv.faceemoji.utils
 
 import android.content.Intent
+import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 
 /**
@@ -10,6 +11,12 @@ class Navigator(val context: AppCompatActivity) {
 
     inline fun <reified T : AppCompatActivity> startActivity() {
         val intent = Intent(context.applicationContext, T::class.java)
+        context.startActivity(intent)
+    }
+
+    inline fun <reified T : AppCompatActivity> startActivity(bundle: Bundle) {
+        val intent = Intent(context.applicationContext, T::class.java)
+        intent.putExtras(bundle)
         context.startActivity(intent)
     }
 }
