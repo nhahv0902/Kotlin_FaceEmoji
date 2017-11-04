@@ -29,7 +29,7 @@ class ChoseActivity : BaseActivity() {
 
 
         camera.setOnClickListener { openCameraWithPermissionCheck() }
-        gallery.setOnClickListener { shareImageViaIntent() }
+        gallery.setOnClickListener { startPickPicture() }
     }
 
     private fun shareImageViaIntent(){

@@ -29,7 +29,7 @@
 
         <LinearLayout
             android:id="@+id/camera"
-            android:layout_width="@dimen/dp_200"
+            android:layout_width="170dp"
             android:layout_height="@dimen/dp_50"
             android:background="@drawable/bg_chose_ticker"
             android:gravity="center_vertical"

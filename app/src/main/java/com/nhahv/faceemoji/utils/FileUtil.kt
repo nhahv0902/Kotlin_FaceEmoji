@@ -1,11 +1,15 @@
 package com.nhahv.faceemoji.utils
 
+import android.content.Context
 import android.os.Environment
 import android.util.Log
+import android.util.TypedValue
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+
+
 
 /**
  * Created by nhahv on 11/3/17.
@@ -43,4 +47,7 @@ object FileUtil {
         }
     }
 
+    fun dpToPx(context: Context, valueInDp: Float): Float {
+        return TypedValue.applyDimension(1, valueInDp, context.resources.displayMetrics)
+    }
 }
