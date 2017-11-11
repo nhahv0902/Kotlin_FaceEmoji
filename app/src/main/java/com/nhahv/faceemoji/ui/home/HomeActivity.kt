@@ -16,18 +16,17 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.nhahv.faceemoji.R
-import com.nhahv.faceemoji.data.model.Emojis
 import com.nhahv.faceemoji.databinding.ActivityHomeBinding
 import com.nhahv.faceemoji.databinding.DialogLibraryBinding
 import com.nhahv.faceemoji.ui.BaseActivity
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.dpToPx
-import com.nhahv.faceemoji.utils.GlideApp
-import com.nhahv.faceemoji.utils.TextDrawable
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
-import java.io.*
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
 
 @RuntimePermissions
 class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
@@ -42,18 +41,6 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
                 R.layout.activity_home)
         binding.viewModel = viewModel
 
-
-        var bundle = intent.extras
-        bundle?.let {
-
-            val path = bundle.getString("result")
-            GlideApp.with(this).load(File(path)).into(picture)
-        }
-
-        imageView.setOnClickListener {
-            imageView.setImageBitmap(loadBitmapFromEdit())
-//            shareWithPermissionCheck()
-        }
 
         editText.addTextChangedListener(this)
     }
@@ -95,12 +82,10 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
     }
 
     override fun setImagePicture(path: String?) {
-        GlideApp.with(this).load(path).into(picture)
         addImageBetweenText(Drawable.createFromPath(path))
     }
 
     override fun setImagePicture(uri: Uri?) {
-        GlideApp.with(this).load(uri).into(picture)
         val drawable = try {
             val inputStream: InputStream = contentResolver.openInputStream(uri)
             Drawable.createFromStream(inputStream, uri.toString())
@@ -170,31 +155,6 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
         editText.setSelection(selectionCursor)
     }
 
-    private fun convertTextToImage(value: String): TextDrawable {
-
-        val text = TextDrawable(this)
-        text.text = value
-        return text
-    }
-
-    private fun shareImage(): File? {
-        return try {
-            imageView.isDrawingCacheEnabled = true
-            imageView.buildDrawingCache(true)
-            val bitmap = imageView.drawingCache
-            val file = createImageFile()
-            val outPut = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outPut)
-            outPut.flush()
-            outPut.close()
-            imageView.isDrawingCacheEnabled = false
-            imageView.buildDrawingCache(false)
-            file
-        } catch (ex: Exception) {
-            null
-        }
-    }
-
 
     private fun createDrawable(drawableId: Int, text: String): BitmapDrawable {
         val bm = BitmapFactory.decodeResource(resources, drawableId).copy(Bitmap.Config.ARGB_8888, true)
@@ -207,14 +167,6 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
         canvas.drawText(text, 0f, (bm.height / 2).toFloat(), paint)
 
         return BitmapDrawable(bm)
-    }
-
-    fun addToText(section: Int, index: Int, collectible: Boolean) {
-        if (collectible) {
-            addToText(Emojis.getCollectibleMediumImageName(section, index))
-        } else {
-            addToText(Emojis.getMediumImageName(section, index))
-        }
     }
 
     fun addToText(name: String) {

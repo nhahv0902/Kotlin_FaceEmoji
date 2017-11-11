@@ -99,6 +99,7 @@ dependencies {
 //    implementation 'com.adobe.creativesdk:image:4.8.4'
 //    implementation 'com.localytics.android:library:4.0.1'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.8'
+    implementation 'com.getbase:floatingactionbutton:1.10.1'
 }
 
 

@@ -46,4 +46,8 @@ open class BaseActivity : AppCompatActivity() {
             }
         }
     }
+
+    inline fun <reified T : AppCompatActivity> switchActivity() {
+        startActivity(Intent(this, T::class.java))
+    }
 }

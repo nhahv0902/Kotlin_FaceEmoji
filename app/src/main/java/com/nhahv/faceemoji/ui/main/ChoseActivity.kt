@@ -9,11 +9,13 @@ import android.os.Bundle
 import com.nhahv.faceemoji.R
 import com.nhahv.faceemoji.databinding.ActivityChoseBinding
 import com.nhahv.faceemoji.ui.BaseActivity
+import com.nhahv.faceemoji.ui.home.HomeActivity
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
-import kotlinx.android.synthetic.main.activity_chose.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
 import java.io.File
+import java.util.*
+import kotlin.concurrent.timerTask
 
 @RuntimePermissions
 class ChoseActivity : BaseActivity() {
@@ -28,8 +30,9 @@ class ChoseActivity : BaseActivity() {
         binding.viewModel = viewModel
 
 
-        camera.setOnClickListener { openCameraWithPermissionCheck() }
-        gallery.setOnClickListener { startPickPicture() }
+        Timer().schedule(timerTask { switchActivity<HomeActivity>() }, 1000)
+//        camera.setOnClickListener { openCameraWithPermissionCheck() }
+//        gallery.setOnClickListener { startPickPicture() }
     }
 
     private fun shareImageViaIntent(){
