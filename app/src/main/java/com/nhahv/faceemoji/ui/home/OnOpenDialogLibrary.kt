@@ -12,4 +12,6 @@ interface OnOpenDialogLibrary {
     fun setImagePicture(uri: Uri?)
 
     fun setImagePicture(path: String?)
+
+    fun editAddPicture(path: String)
 }

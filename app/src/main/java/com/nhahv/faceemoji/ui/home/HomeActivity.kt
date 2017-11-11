@@ -2,59 +2,78 @@ package com.nhahv.faceemoji.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialog
-import android.text.*
+import android.text.Editable
+import android.text.Layout
 import android.text.style.ImageSpan
+import android.util.Base64
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.widget.Toast
+import com.google.android.gms.vision.Frame
+import com.google.android.gms.vision.face.FaceDetector
 import com.nhahv.faceemoji.R
 import com.nhahv.faceemoji.databinding.ActivityHomeBinding
 import com.nhahv.faceemoji.databinding.DialogLibraryBinding
 import com.nhahv.faceemoji.ui.BaseActivity
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.dpToPx
+import com.theartofdev.edmodo.cropper.CropImage
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
 
 @RuntimePermissions
-class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
+class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
 
     private lateinit var viewModel: HomeViewModel
+    private lateinit var detector: FaceDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = obtainViewModel(HomeViewModel::class.java)
+        loadPictureWithPermissionCheck()
+
         viewModel.onDialogLibrary = this
-        val binding: ActivityHomeBinding = DataBindingUtil.setContentView(this,
-                R.layout.activity_home)
+
+        val binding: ActivityHomeBinding = DataBindingUtil.setContentView(this, R.layout.activity_home)
         binding.viewModel = viewModel
+        events()
 
 
-        editText.addTextChangedListener(this)
+        detector = FaceDetector.Builder(applicationContext)
+                .setTrackingEnabled(false)
+                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .build()
+
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
+    private fun events() {
+        camera.setOnClickListener {
+            openCameraWithPermissionCheck()
+            library.collapse()
         }
+
+        gallery.setOnClickListener {
+            startPickPicture()
+            library.collapse()
+        }
+
+        share.setOnClickListener {
+            shareWithPermissionCheck()
+        }
+
+        layoutYour.setOnClickListener { viewModel.layoutYour(true) }
+        layoutMore.setOnClickListener { viewModel.layoutYour(false) }
     }
 
     override fun openDialog() {
@@ -82,43 +101,46 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
     }
 
     override fun setImagePicture(path: String?) {
-        addImageBetweenText(Drawable.createFromPath(path))
+        path?.let {
+            CropImage.activity(Uri.fromFile(File(it))).start(this)
+//            detectFace(Uri.fromFile(File(it)))
+        }
+//        insert("(::", Drawable.createFromPath(path))
+
     }
 
     override fun setImagePicture(uri: Uri?) {
-        val drawable = try {
-            val inputStream: InputStream = contentResolver.openInputStream(uri)
-            Drawable.createFromStream(inputStream, uri.toString())
-
-        } catch (e: FileNotFoundException) {
-            null
+        uri?.let {
+            CropImage.activity(uri).start(this)
+//            detectFace(uri)
         }
-        drawable?.let {
-            addImageBetweenText(drawable)
-        }
-
-
+//        try {
+//            val inputStream: InputStream = contentResolver.openInputStream(uri)
+//            Drawable.createFromStream(inputStream, uri.toString())
+//            insert("(::", Drawable.createFromStream(inputStream, uri.toString()))
+//
+//
+//
+//        } catch (e: FileNotFoundException) {
+//        }
     }
+
+    override fun editAddPicture(path: String) {
+        insert("(::", Drawable.createFromPath(path))
+    }
+
+    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+    fun loadPicture() {
+        viewModel.loadPicture()
+    }
+
 
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun share() {
-//        val intent = Intent(Intent.ACTION_SEND)
-//        intent.type = "image/*"
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "image/*"
 //        intent.putExtra(Intent.EXTRA_STREAM, Emojis.getImageUri(bitmap, packageName))
-//        intent.`package` = packageName
-//        startActivity(Intent.createChooser(intent, "share Image"))
-
-//            val temp = shareImage()
-//            temp?.let {
-//                GlideApp.with(this).load(Uri.fromFile(it)).into(picture)
-//                val intent = Intent(Intent.ACTION_SEND)
-//                intent.type = "image/*"
-//                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(it))
-//                startActivity(Intent.createChooser(intent, "share Image"))
-//                return@let
-//            }
-
-        Log.d("TAg", "null")
+        startActivity(Intent.createChooser(intent, "share Image"))
     }
 
 
@@ -141,34 +163,6 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
         viewModel.onResultFromActivity(requestCode, resultCode, data)
     }
 
-    private fun addImageBetweenText(drawable: Drawable) {
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-
-        var selectionCursor = editText.selectionStart
-        editText.text.insert(selectionCursor, ".")
-        selectionCursor = editText.selectionStart
-
-        val builder = SpannableStringBuilder(editText.text)
-        builder.setSpan(ImageSpan(drawable), selectionCursor - ".".length, selectionCursor,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        editText.text = builder
-        editText.setSelection(selectionCursor)
-    }
-
-
-    private fun createDrawable(drawableId: Int, text: String): BitmapDrawable {
-        val bm = BitmapFactory.decodeResource(resources, drawableId).copy(Bitmap.Config.ARGB_8888, true)
-        val paint = Paint()
-        paint.style = Paint.Style.FILL
-        paint.color = Color.BLACK
-        paint.textSize = 20f
-
-        val canvas = Canvas(bm)
-        canvas.drawText(text, 0f, (bm.height / 2).toFloat(), paint)
-
-        return BitmapDrawable(bm)
-    }
-
     fun addToText(name: String) {
         try {
             insert(":-)", Drawable.createFromStream(assets.open(name), null))
@@ -183,14 +177,6 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
      *  Event Text watcher
      *
      */
-
-    val emoticonsToRemove: ArrayList<ImageSpan> = ArrayList()
-    var oldText: CharSequence = ""
-
-    fun insert(emoticon: String, resource: Int) {
-        insert(emoticon, editText.context.resources.getDrawable(resource))
-    }
-
     fun insert(emoticon: String, drawable: Drawable) {
         var size = dpToPx(editText.context, 40.0f).toInt()
         drawable.setBounds(0, 0, size, size)
@@ -203,56 +189,12 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
         message.append(" ")
     }
 
-    override fun afterTextChanged(s: Editable?) {
-        var message: Editable = this.editText.getEditableText()
-        if (message.length > this.oldText.length) {
-            var difference: String = message.subSequence(this.oldText.length, message.length).toString()
-//                    HomeActivity::javaClass.addToText()
-            Log.d("TAG", difference)
-            if (difference == "y") {
-                message.replace(this.oldText.length, message.length, "");
-                addToText("neymoji_body_300_80.png")
-
-            }
-        }
-        var it = emoticonsToRemove.iterator()
-        while (it.hasNext()) {
-            var span: ImageSpan = it.next()
-            var start = message.getSpanStart(span)
-            var end = message.getSpanEnd(span)
-            message.removeSpan(span)
-            if (start != end) {
-                message.delete(start, end)
-            }
-        }
-        emoticonsToRemove.clear()
-        this.oldText = s.toString()
-    }
-
-    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        if (count > 0) {
-            val end = start + count
-            val message = editText.editableText
-            for (span in message.getSpans(start, end, ImageSpan::class.java)) {
-                val spanStart = message.getSpanStart(span)
-                val spanEnd = message.getSpanEnd(span)
-                if (spanStart < end && spanEnd > start) {
-                    emoticonsToRemove.add(span)
-                }
-            }
-        }
-    }
-
-    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-    }
-
-
     /**
      *
      * Load bitmap
      * */
 
-    fun loadBitmapFromEdit(): Bitmap {
+    private fun loadBitmapFromEdit(): Bitmap {
         Log.d("TAG", editText.text.toString())
         editText.isCursorVisible = false
         editText.setSelection(editText.text.length)
@@ -287,10 +229,78 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary, TextWatcher {
         editText.layout(editText.left, editText.top, editText.right, editText.bottom)
         editText.draw(c)
         editText.isCursorVisible = true
-
-
-
-
         return b
+    }
+
+    fun detectFace(path: Uri) {
+        var bitmap: Bitmap = decodeBitmapUri(this, path)
+        if (detector != null && bitmap != null) {
+            var scale: Float = resources.displayMetrics.density
+            val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            paint.color = Color.rgb(255, 61, 61)
+            paint.textSize = (14 * scale).toInt().toFloat()
+            paint.setShadowLayer(1f, 0f, 1f, Color.WHITE)
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 3f
+
+            val canvas = Canvas(bitmap.copy(Bitmap.Config.ARGB_8888, true))
+            canvas.drawBitmap(bitmap, 0f, 0f, paint)
+            val frame = Frame.Builder().setBitmap(bitmap).build()
+            val faces = detector.detect(frame)
+
+            var text: String = ""
+            for (index in 0 until faces.size()) {
+                val face = faces.valueAt(index)
+                canvas.drawRect(
+                        face.position.x,
+                        face.position.y,
+                        face.position.x + face.width,
+                        face.position.y + face.height, paint)
+                text = text + " - " + face.isSmilingProbability.toString() + " - " + face.isLeftEyeOpenProbability.toString() + " - " + face.isRightEyeOpenProbability.toString()
+
+                for (landmark in face.landmarks) {
+                    val cx = landmark.position.x.toInt()
+                    val cy = landmark.position.y.toInt()
+                    canvas.drawCircle(cx.toFloat(), cy.toFloat(), 5f, paint)
+                }
+            }
+
+            Log.d("TAG", "text = $text")
+
+            if (faces.size() == 0) {
+                Toast.makeText(this, "Not Face", Toast.LENGTH_SHORT).show()
+                Log.d("TAG", "No Face")
+            } else {
+                Toast.makeText(this, " Face", Toast.LENGTH_SHORT).show()
+                Log.d("TAG", "face ${faces.size()}")
+            }
+        } else {
+            Toast.makeText(this, "Could not set up the detector!", Toast.LENGTH_SHORT).show()
+            Log.d("TAG", "Could not set up the detector!")
+        }
+
+    }
+
+    @Throws(FileNotFoundException::class)
+    private fun decodeBitmapUri(ctx: Context, uri: Uri): Bitmap {
+        val targetW = 600
+        val targetH = 600
+        val bmOptions = BitmapFactory.Options()
+        bmOptions.inJustDecodeBounds = true
+        BitmapFactory.decodeStream(ctx.contentResolver.openInputStream(uri), null, bmOptions)
+        val photoW = bmOptions.outWidth
+        val photoH = bmOptions.outHeight
+
+        val scaleFactor = Math.min(photoW / targetW, photoH / targetH)
+        bmOptions.inJustDecodeBounds = false
+        bmOptions.inSampleSize = scaleFactor
+
+        return BitmapFactory.decodeStream(ctx.contentResolver
+                .openInputStream(uri), null, bmOptions)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        detector.release()
     }
 }

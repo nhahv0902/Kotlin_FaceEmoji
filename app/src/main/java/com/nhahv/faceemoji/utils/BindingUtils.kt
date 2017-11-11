@@ -2,9 +2,9 @@ package com.nhahv.faceemoji.utils
 
 import android.databinding.BindingAdapter
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import java.io.File
 
 /**
  * Created by nhahv0902 on 10/19/17.
@@ -12,13 +12,6 @@ import android.widget.ImageView
 
 @BindingAdapter(value = *arrayOf("imageUrl", "imageError"), requireAll = false)
 fun bindImage(view: ImageView, source: Int?, error: Drawable) {
-//    GlideApp.with(view.context).load(source).error(error).into(view)
-    if (source == null) {
-        Log.d("TAG", "null")
-    } else {
-        Log.d("TAG", "not null")
-    }
-
     source?.let {
         view.setImageResource(source)
     }
@@ -27,4 +20,11 @@ fun bindImage(view: ImageView, source: Int?, error: Drawable) {
 @BindingAdapter("selected")
 fun bindSelected(view: View, isSelected: Boolean) {
     view.isSelected = isSelected
+}
+
+@BindingAdapter(value = *arrayOf("imageFile", "imageFileError"), requireAll = false)
+fun bindImageFile(view: ImageView, imageFile: String?, error: Drawable) {
+    imageFile?.let {
+        GlideApp.with(view.context).load(File(it)).error(error).into(view)
+    }
 }

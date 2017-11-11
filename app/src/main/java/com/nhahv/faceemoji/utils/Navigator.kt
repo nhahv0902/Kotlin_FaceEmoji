@@ -3,6 +3,7 @@ package com.nhahv.faceemoji.utils
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 
 /**
  * Created by nhahv on 10/19/17.
@@ -19,4 +20,9 @@ class Navigator(val context: AppCompatActivity) {
         intent.putExtras(bundle)
         context.startActivity(intent)
     }
+
+    fun log(message: String) {
+        Log.d("TAG", message)
+    }
+
 }

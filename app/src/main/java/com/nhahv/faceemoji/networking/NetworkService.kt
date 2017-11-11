@@ -1,6 +1,8 @@
 package com.nhahv.faceemoji.networking
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -27,15 +29,9 @@ import javax.inject.Singleton
  * Module for Retrofit dagger2
  */
 
-@Module
-class NetworkModule(private val application: Application) {
+class NetworkService(private val application: Context) {
 
-    @Provides
-    fun provideApplication(): Application = application
-
-    @Singleton
-    @Provides
-    fun provideGson(): Gson {
+    private fun createGson(): Gson {
         val booleanAdapter = BooleanAdapter()
         val integerAdapter = IntegerAdapter()
         return GsonBuilder()
@@ -48,23 +44,15 @@ class NetworkModule(private val application: Application) {
                 .create()
     }
 
-    @Singleton
-    @Provides
-    fun provideOkHttpCache(application: Application): Cache {
+    private fun createOkHttpCache(): Cache {
         val cacheSize = 10 * 1024 * 1024
         return Cache(application.cacheDir, cacheSize.toLong())
     }
 
-    @Singleton
-    @Provides
-    fun provideInterceptorImpl(): Interceptor = InterceptorImpl()
-
-    @Singleton
-    @Provides
-    fun provideOkHttpClient(cache: Cache, interceptor: Interceptor): OkHttpClient {
-        val httpClientBuilder = OkHttpClient.Builder();
-        httpClientBuilder.cache(cache)
-        httpClientBuilder.addInterceptor(interceptor)
+    private fun createOkHttpClient(): OkHttpClient {
+        val httpClientBuilder = OkHttpClient.Builder()
+        httpClientBuilder.cache(createOkHttpCache())
+        httpClientBuilder.addInterceptor(InterceptorImpl())
         httpClientBuilder.readTimeout(CONNECTION_TIMEOUT.toLong(), TimeUnit.SECONDS)
         httpClientBuilder.connectTimeout(CONNECTION_TIMEOUT.toLong(), TimeUnit.SECONDS)
         if (BuildConfig.DEBUG) {
@@ -75,24 +63,28 @@ class NetworkModule(private val application: Application) {
         return httpClientBuilder.build()
     }
 
-    @Singleton
-    @Provides
-    fun provideRetrofit(gson: Gson, okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
+    fun getAPI(): FaceEmojiAPI {
+        val retrofit = Retrofit.Builder()
                 .baseUrl(END_POINT_URL)
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create(createGson()))
                 .addCallAdapterFactory(RxErrorHandlingCallAdapterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(okHttpClient)
+                .client(createOkHttpClient())
                 .build()
+        return retrofit.create(FaceEmojiAPI::class.java)
     }
-
-    @Singleton
-    @Provides
-    fun provideAPI(retrofit: Retrofit): FaceEmojiAPI = retrofit.create(FaceEmojiAPI::class.java)
 
     companion object {
         private val CONNECTION_TIMEOUT = 60
-        val END_POINT_URL = ""
+        val END_POINT_URL = "http://139.59.112.147/"
+
+        @SuppressLint("StaticFieldLeak")
+        private var INSTANCE: NetworkService? = null
+
+        fun getInstance(application: Context) =
+                INSTANCE ?: synchronized(this) {
+                    INSTANCE ?: NetworkService(application).also { INSTANCE = it }
+                }
+
     }
 }
