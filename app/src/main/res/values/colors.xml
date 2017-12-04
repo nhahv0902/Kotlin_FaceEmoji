@@ -10,5 +10,6 @@
     <color name="color_float_button">#2B7BF2</color>
     <color name="color_in_active_">#8396a8</color>
     <color name="color_active_">#efb294</color>
+    <color name="color_grey_selected">#e9e7e7</color>
 
 </resources>

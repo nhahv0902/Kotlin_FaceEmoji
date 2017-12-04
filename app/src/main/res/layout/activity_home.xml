@@ -55,9 +55,7 @@
             android:id="@+id/share"
             android:layout_width="80dp"
             android:layout_height="32dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="48dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginRight="0dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_share"
             android:drawableLeft="@drawable/ic_sent"
@@ -65,9 +63,8 @@
             android:text="Send"
             android:textAllCaps="true"
             android:textColor="@android:color/white"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/editText"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editText" />
 
         <TextView
@@ -134,19 +131,19 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
+            android:layout_width="368dp"
             android:layout_height="0dp"
-            android:layout_marginTop="8dp"
             android:background="@color/color_background"
-            android:visibility="gone"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
             app:adapter="@{viewModel.adapter}"
             app:layoutManager="android.support.v7.widget.GridLayoutManager"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/moreEmoji"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lineYou"
             app:spanCount="4" />
-
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/library"
@@ -174,16 +171,68 @@
                 app:fab_icon="@drawable/ic_collections_white_24dp" />
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
-        <ImageView
-            android:id="@+id/imageView2"
+        <TextView
+            android:id="@+id/font"
+            style="@style/CustomTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:text="A"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/share"
+            app:layout_constraintEnd_toStartOf="@+id/typeFont"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lineYou"
-            tools:imageFile="@{viewModel.fileImage}"
-            tools:imageFileError="@{@drawable/adjust_status}" />
+        <TextView
+            android:id="@+id/typeFont"
+            style="@style/CustomTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:textColor="#DBA70D"
+            app:layout_constraintBottom_toBottomOf="@+id/font"
+            app:layout_constraintEnd_toStartOf="@+id/sizeFont"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/font" />
+
+        <TextView
+            android:id="@+id/sizeFont"
+            style="@style/CustomTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Size"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@+id/font"
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/typeFont" />
+
+        <TextView
+            android:id="@+id/imageView2"
+            style="@style/CustomTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:drawableLeft="@drawable/ic_brush"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/font"
+            app:layout_constraintEnd_toStartOf="@+id/share"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/sizeFont"
+            app:layout_constraintTop_toTopOf="@+id/sizeFont" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/moreEmoji"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="@{!viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
+            app:adapter="@{viewModel.moreAdapter}"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
     </android.support.constraint.ConstraintLayout>
 </layout>

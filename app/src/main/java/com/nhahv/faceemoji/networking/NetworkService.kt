@@ -66,10 +66,8 @@ class NetworkService(private val application: Context) {
     fun getAPI(): FaceEmojiAPI {
         val retrofit = Retrofit.Builder()
                 .baseUrl(END_POINT_URL)
-                .addConverterFactory(GsonConverterFactory.create(createGson()))
-                .addCallAdapterFactory(RxErrorHandlingCallAdapterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(createOkHttpClient())
+                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
+                .client(OkHttpClient())
                 .build()
         return retrofit.create(FaceEmojiAPI::class.java)
     }

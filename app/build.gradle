@@ -39,6 +39,10 @@ android {
 
     productFlavors {
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 androidExtensions {
@@ -95,9 +99,12 @@ dependencies {
     kapt "com.github.hotchemi:permissionsdispatcher-processor:${runtimePermission}"
 
     /* Add the CSDK framework dependencies (Make sure these version numbers are correct) */
-//    implementation 'com.adobe.creativesdk.foundation:auth:0.9.1251'
-//    implementation 'com.adobe.creativesdk:image:4.8.4'
-//    implementation 'com.localytics.android:library:4.0.1'
+
+    //    implementation 'com.adobe.creativesdk.foundation:auth:0.9.1251'
+
+    //    implementation 'com.adobe.creativesdk:image:4.8.4'
+
+    //    implementation 'com.localytics.android:library:4.0.1'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.8'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.1'

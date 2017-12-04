@@ -13,7 +13,6 @@ import android.support.design.widget.BottomSheetDialog
 import android.text.Editable
 import android.text.Layout
 import android.text.style.ImageSpan
-import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.vision.Frame
@@ -66,14 +65,19 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
         gallery.setOnClickListener {
             startPickPicture()
             library.collapse()
+
         }
 
         share.setOnClickListener {
             shareWithPermissionCheck()
         }
 
-        layoutYour.setOnClickListener { viewModel.layoutYour(true) }
-        layoutMore.setOnClickListener { viewModel.layoutYour(false) }
+        layoutYour.setOnClickListener {
+            viewModel.changeYouEmoji()
+        }
+        layoutMore.setOnClickListener {
+            viewModel.changeMoreEmoji()
+        }
     }
 
     override fun openDialog() {
@@ -102,8 +106,13 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
 
     override fun setImagePicture(path: String?) {
         path?.let {
-            CropImage.activity(Uri.fromFile(File(it))).start(this)
+            CropImage.activity(Uri.fromFile(File(it)))
+                    .setAspectRatio(3, 4)
+                    .setRequestedSize(250, 300)
+                    .start(this)
+
 //            detectFace(Uri.fromFile(File(it)))
+
         }
 //        insert("(::", Drawable.createFromPath(path))
 
@@ -111,7 +120,10 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
 
     override fun setImagePicture(uri: Uri?) {
         uri?.let {
-            CropImage.activity(uri).start(this)
+            CropImage.activity(uri)
+                    .setAspectRatio(5, 6)
+                    .setRequestedSize(250, 300)
+                    .start(this)
 //            detectFace(uri)
         }
 //        try {
@@ -126,7 +138,14 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
     }
 
     override fun editAddPicture(path: String) {
-        insert("(::", Drawable.createFromPath(path))
+        try {
+            if (path.contains("img/") or path.contains("you/")) {
+                insert(":-)", Drawable.createFromStream(assets.open(path), null))
+            } else {
+                insert("(::", Drawable.createFromPath(path))
+            }
+        } catch (ex: IOException) {
+        }
     }
 
     @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -139,7 +158,6 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
     fun share() {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/*"
-//        intent.putExtra(Intent.EXTRA_STREAM, Emojis.getImageUri(bitmap, packageName))
         startActivity(Intent.createChooser(intent, "share Image"))
     }
 

@@ -15,4 +15,15 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="CustomTextView" parent="@android:style/TextAppearance.Widget.TextView">
+        <item name="android:background">@drawable/bg_font_text</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:layout_marginRight">4dp</item>
+        <item name="android:layout_marginLeft">4dp</item>
+    </style>
 </resources>
