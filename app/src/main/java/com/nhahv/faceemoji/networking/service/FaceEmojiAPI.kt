@@ -13,6 +13,6 @@ interface FaceEmojiAPI {
 
     @FormUrlEncoded
     @Headers("Content-Type: application/x-www-form-urlencoded")
-    @POST("uploadBase64_JSON")
+    @POST("uploadBase64")
     fun uploadImage(@Field("base64data") base64data: String): Call<String>
 }

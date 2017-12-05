@@ -2,6 +2,7 @@ package com.nhahv.faceemoji.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
@@ -10,19 +11,28 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialog
+import android.support.v4.content.ContextCompat
+import android.support.v4.content.res.ResourcesCompat
 import android.text.Editable
-import android.text.Layout
 import android.text.style.ImageSpan
-import android.util.Log
+import android.util.SparseArray
 import android.widget.Toast
 import com.google.android.gms.vision.Frame
+import com.google.android.gms.vision.face.Face
 import com.google.android.gms.vision.face.FaceDetector
+import com.jaredrummler.android.colorpicker.ColorPickerDialog
+import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import com.nhahv.faceemoji.R
 import com.nhahv.faceemoji.databinding.ActivityHomeBinding
+import com.nhahv.faceemoji.databinding.BottomFontsBinding
+import com.nhahv.faceemoji.databinding.DialogFontSizeBinding
 import com.nhahv.faceemoji.databinding.DialogLibraryBinding
 import com.nhahv.faceemoji.ui.BaseActivity
+import com.nhahv.faceemoji.ui.view.FaceProgressDialog
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.dpToPx
+import com.nhahv.faceemoji.utils.hideSoftKeyboard
+import com.nhahv.faceemoji.utils.showSoftKeyboard
 import com.theartofdev.edmodo.cropper.CropImage
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
@@ -32,22 +42,24 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 @RuntimePermissions
-class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
+class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var detector: FaceDetector
+
+    var progressDialog: FaceProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = obtainViewModel(HomeViewModel::class.java)
         loadPictureWithPermissionCheck()
 
-        viewModel.onDialogLibrary = this
+        viewModel.listener = this
 
         val binding: ActivityHomeBinding = DataBindingUtil.setContentView(this, R.layout.activity_home)
         binding.viewModel = viewModel
+        editText.typeface = ResourcesCompat.getFont(this, R.font.comic)
         events()
-
 
         detector = FaceDetector.Builder(applicationContext)
                 .setTrackingEnabled(false)
@@ -73,11 +85,77 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
         }
 
         layoutYour.setOnClickListener {
+            hideSoftKeyboard()
             viewModel.changeYouEmoji()
         }
         layoutMore.setOnClickListener {
+            hideSoftKeyboard()
             viewModel.changeMoreEmoji()
         }
+
+        font.setOnClickListener {
+            showSoftKeyboard(editText)
+            val build = AlertDialog.Builder(this)
+            val binding: BottomFontsBinding = BottomFontsBinding.inflate(layoutInflater, null, false)
+            build.setView(binding.root)
+            val dialog = build.create()
+
+            binding.sansSerif.setOnClickListener {
+                editText.typeface = ResourcesCompat.getFont(this, R.font.sans_serif)
+                dialog.dismiss()
+            }
+            binding.trebutchetMS.setOnClickListener {
+                editText.typeface = ResourcesCompat.getFont(this, R.font.trebutchet)
+                dialog.dismiss()
+            }
+            binding.comicSans.setOnClickListener {
+                editText.typeface = ResourcesCompat.getFont(this, R.font.comic)
+                dialog.dismiss()
+            }
+            binding.caviarDreams.setOnClickListener {
+                editText.typeface = ResourcesCompat.getFont(this, R.font.caaviar)
+                dialog.dismiss()
+            }
+            binding.pacifico.setOnClickListener {
+                editText.typeface = ResourcesCompat.getFont(this, R.font.pacifico)
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
+
+        sizeFont.setOnClickListener {
+            showSoftKeyboard(editText)
+            val build = AlertDialog.Builder(this)
+            val binding: DialogFontSizeBinding = DialogFontSizeBinding.inflate(layoutInflater, null, false)
+            build.setView(binding.root)
+            val dialog = build.create()
+
+            binding.normal.setOnClickListener {
+                editText.textSize = 18f
+                dialog.dismiss()
+            }
+            binding.large.setOnClickListener {
+                editText.textSize = 24f
+                dialog.dismiss()
+            }
+            binding.huge.setOnClickListener {
+                editText.textSize = 30f
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
+
+        colorFont.setOnClickListener {
+            hideSoftKeyboard()
+            ColorPickerDialog.newBuilder()
+                    .setDialogType(ColorPickerDialog.TYPE_PRESETS)
+                    .setAllowPresets(true)
+                    .setDialogId(0)
+                    .setColor(Color.BLUE)
+                    .setShowAlphaSlider(true)
+                    .show(this)
+        }
+
     }
 
     override fun openDialog() {
@@ -104,47 +182,27 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
         dialog.show()
     }
 
-    override fun setImagePicture(path: String?) {
-        path?.let {
-            CropImage.activity(Uri.fromFile(File(it)))
-                    .setAspectRatio(3, 4)
-                    .setRequestedSize(250, 300)
-                    .start(this)
-
-//            detectFace(Uri.fromFile(File(it)))
-
-        }
-//        insert("(::", Drawable.createFromPath(path))
-
-    }
-
     override fun setImagePicture(uri: Uri?) {
         uri?.let {
+            //            detectFace(uri)
             CropImage.activity(uri)
-                    .setAspectRatio(5, 6)
-                    .setRequestedSize(250, 300)
+                    .setAspectRatio(1, 1)
+                    .setRequestedSize(350, 350)
+                    .setOutputCompressQuality(100)
                     .start(this)
-//            detectFace(uri)
         }
-//        try {
-//            val inputStream: InputStream = contentResolver.openInputStream(uri)
-//            Drawable.createFromStream(inputStream, uri.toString())
-//            insert("(::", Drawable.createFromStream(inputStream, uri.toString()))
-//
-//
-//
-//        } catch (e: FileNotFoundException) {
-//        }
     }
 
     override fun editAddPicture(path: String) {
+        showSoftKeyboard(editText)
         try {
             if (path.contains("img/") or path.contains("you/")) {
-                insert(":-)", Drawable.createFromStream(assets.open(path), null))
+                insert("(", Drawable.createFromStream(assets.open(path), null))
             } else {
-                insert("(::", Drawable.createFromPath(path))
+                insert("(", Drawable.createFromPath(path))
             }
         } catch (ex: IOException) {
+            toast("Not add emoji")
         }
     }
 
@@ -156,15 +214,17 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
 
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun share() {
+        val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/*"
+        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
         startActivity(Intent.createChooser(intent, "share Image"))
     }
 
 
     @NeedsPermission(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun openCamera() {
-        val photoFile = createImageFile()
+        val photoFile = createImageFile("Face")
         viewModel.currentPath = photoFile?.path
         startCamera(photoFile)
     }
@@ -181,27 +241,17 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
         viewModel.onResultFromActivity(requestCode, resultCode, data)
     }
 
-    fun addToText(name: String) {
-        try {
-            insert(":-)", Drawable.createFromStream(assets.open(name), null))
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-    }
-
-
     /**
      *  Event Text watcher
      *
      */
-    fun insert(emoticon: String, drawable: Drawable) {
-        var size = dpToPx(editText.context, 40.0f).toInt()
-        drawable.setBounds(0, 0, size, size)
-        var span = ImageSpan(drawable, 0)
-        var start = editText.selectionStart
-        var end = editText.selectionEnd
-        var message: Editable = editText.editableText
+    private fun insert(emoticon: String, drawable: Drawable) {
+        val width = dpToPx(editText.context, 68f).toInt()
+        drawable.setBounds(0, 0, width, width)
+        val span = ImageSpan(drawable, 0)
+        val start = editText.selectionStart
+        val end = editText.selectionEnd
+        val message: Editable = editText.editableText
         message.replace(start, end, emoticon)
         message.setSpan(span, start, emoticon.length + start, 33)
         message.append(" ")
@@ -213,90 +263,50 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
      * */
 
     private fun loadBitmapFromEdit(): Bitmap {
-        Log.d("TAG", editText.text.toString())
+        val color = editText.currentTextColor
         editText.isCursorVisible = false
+        editText.setBackgroundColor(Color.WHITE)
         editText.setSelection(editText.text.length)
-        var lines = editText.lineCount
-        var width = editText.width
-        var padding = dpToPx(this, 5.0f).toInt()
+        editText.setTextColor(ContextCompat.getColor(this, R.color.color_blue_))
+
+        val width = editText.width
+        val height: Int = editText.height
+
+        val padding = dpToPx(this, 5.0f).toInt()
         editText.selectionEnd
-        var pos = editText.selectionStart
-        var layout: Layout = editText.layout
-        var line = layout.getLineForOffset(pos)
-        var baseline = layout.getLineBaseline(line)
-        var ascent: Int = layout.getLineAscent(line)
-        var x: Float = layout.getPrimaryHorizontal(pos)
-        var y: Int = baseline + ascent
-        var height: Int = editText.height
-        if (lines == 1) {
-            width = x.toInt() + (padding * 2)
-            var spanSize: Int = (editText.text.getSpans(0, pos, ImageSpan::class.java) as Array<ImageSpan>).size * 3
-            height = if ((editText.text.getSpans(0, pos, ImageSpan::class.java) as Array<ImageSpan>).size == 0 || editText.text.length - spanSize <= 0) {
-                dpToPx(this, 50.0f).toInt()
-            } else {
-                dpToPx(this, 60.0f).toInt()
-            }
-        }
-        var b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-//        var b = BitmapFactory.decodeResource(resources, R.drawable.neymar_heads_cmn_001_80).copy(Bitmap.Config.ARGB_8888, true)
-        var c = Canvas(b)
-        var p = Paint()
+
+        val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val c = Canvas(b)
+        val p = Paint()
+        p.setARGB(0, 0, 0, 0)
         p.style = Paint.Style.FILL
-        p.setARGB(255, 181, 185, 194)
-        c.drawRoundRect(RectF(0.0f, 0.0f, width.toFloat(), height.toFloat()), padding.toFloat(), padding.toFloat(), p)
+        p.color = Color.BLACK
+        c.drawText("@ymoji", padding.toFloat(), padding.toFloat(), p)
+//        c.drawRoundRect(RectF(0.0f, 0.0f, width.toFloat(), height.toFloat()), padding.toFloat(), padding.toFloat(), p)
         editText.layout(editText.left, editText.top, editText.right, editText.bottom)
         editText.draw(c)
         editText.isCursorVisible = true
+        editText.setBackgroundResource(R.drawable.bg_editor)
+        editText.setTextColor(color)
         return b
     }
 
-    fun detectFace(path: Uri) {
-        var bitmap: Bitmap = decodeBitmapUri(this, path)
-        if (detector != null && bitmap != null) {
-            var scale: Float = resources.displayMetrics.density
-            val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            paint.color = Color.rgb(255, 61, 61)
-            paint.textSize = (14 * scale).toInt().toFloat()
-            paint.setShadowLayer(1f, 0f, 1f, Color.WHITE)
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 3f
-
-            val canvas = Canvas(bitmap.copy(Bitmap.Config.ARGB_8888, true))
-            canvas.drawBitmap(bitmap, 0f, 0f, paint)
-            val frame = Frame.Builder().setBitmap(bitmap).build()
-            val faces = detector.detect(frame)
-
-            var text: String = ""
-            for (index in 0 until faces.size()) {
-                val face = faces.valueAt(index)
-                canvas.drawRect(
-                        face.position.x,
-                        face.position.y,
-                        face.position.x + face.width,
-                        face.position.y + face.height, paint)
-                text = text + " - " + face.isSmilingProbability.toString() + " - " + face.isLeftEyeOpenProbability.toString() + " - " + face.isRightEyeOpenProbability.toString()
-
-                for (landmark in face.landmarks) {
-                    val cx = landmark.position.x.toInt()
-                    val cy = landmark.position.y.toInt()
-                    canvas.drawCircle(cx.toFloat(), cy.toFloat(), 5f, paint)
-                }
-            }
-
-            Log.d("TAG", "text = $text")
-
+    private fun detectFace(uri: Uri) {
+        val bitmap: Bitmap? = decodeBitmapUri(this, uri)
+        if (bitmap != null) {
+            val frame: Frame = Frame.Builder().setBitmap(bitmap).build()
+            val faces: SparseArray<Face> = detector.detect(frame)
             if (faces.size() == 0) {
-                Toast.makeText(this, "Not Face", Toast.LENGTH_SHORT).show()
-                Log.d("TAG", "No Face")
+                Toast.makeText(this, "No detect face", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, " Face", Toast.LENGTH_SHORT).show()
-                Log.d("TAG", "face ${faces.size()}")
+                CropImage.activity(uri)
+                        .setAspectRatio(5, 6)
+                        .setRequestedSize(250, 300)
+                        .start(this)
             }
         } else {
             Toast.makeText(this, "Could not set up the detector!", Toast.LENGTH_SHORT).show()
-            Log.d("TAG", "Could not set up the detector!")
         }
-
     }
 
     @Throws(FileNotFoundException::class)
@@ -320,5 +330,25 @@ class HomeActivity : BaseActivity(), OnOpenDialogLibrary {
     override fun onDestroy() {
         super.onDestroy()
         detector.release()
+    }
+
+    override fun onColorSelected(dialogId: Int, color: Int) {
+        if (dialogId == 0) {
+            editText.setTextColor(color)
+        }
+    }
+
+    override fun onDialogDismissed(dialogId: Int) {}
+
+    override fun showDialog() {
+        if (progressDialog == null) {
+            progressDialog = FaceProgressDialog(this)
+            progressDialog!!.setCancelable(false)
+        }
+        if (!progressDialog!!.isShowing) progressDialog!!.show()
+    }
+
+    override fun hideDialog() {
+        if (progressDialog != null && progressDialog!!.isShowing) progressDialog!!.dismiss()
     }
 }

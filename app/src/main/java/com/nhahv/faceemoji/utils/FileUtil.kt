@@ -15,12 +15,10 @@ import java.util.*
  */
 object FileUtil {
 
-    fun getAlbumDir(): File? {
+    fun getAlbumDir(folder: String = "Emoji"): File? {
         var storageDir: File? = null
         if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()) {
-            storageDir = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    "Emoji")
+            storageDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), folder)
             if (!storageDir.mkdirs() && !storageDir.exists()) {
                 log("failed to create directory")
                 return null
@@ -35,11 +33,11 @@ object FileUtil {
         Log.d("TAG", message)
     }
 
-    fun createImageFile(): File? {
+    fun createImageFile(folder: String = "Emoji"): File? {
         return try {
             val nameFile = "IMG_" + SimpleDateFormat("yyyyMMdd_HHmmss_",
                     Locale.getDefault()).format(Date())
-            val albumFile = getAlbumDir()
+            val albumFile = getAlbumDir(folder)
             File.createTempFile(nameFile, ".jpg", albumFile)
         } catch (ex: IOException) {
             null
@@ -52,15 +50,12 @@ object FileUtil {
 
     fun loadPictures(): ArrayList<String> {
         val pictures = ArrayList<String>()
-
         val folder = File("/storage/emulated/0/Pictures/Emoji/")
+        if (!folder.exists()) return pictures
         val listOfFiles = folder.listFiles()
-
-        for (file in listOfFiles) {
-            if (file.isFile && (file.path.endsWith(".png") or file.path.endsWith(".jpg"))) {
-                pictures.add(file.path)
-            }
-        }
+        listOfFiles
+                .filter { it.isFile && (it.path.endsWith(".png") or it.path.endsWith(".jpg")) }
+                .mapTo(pictures) { it.path }
         return pictures
     }
 }

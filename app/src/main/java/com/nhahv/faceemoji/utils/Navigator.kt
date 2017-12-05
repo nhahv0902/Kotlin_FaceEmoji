@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.Toast
 
 /**
  * Created by nhahv on 10/19/17.
@@ -24,5 +25,10 @@ class Navigator(val context: AppCompatActivity) {
     fun log(message: String) {
         Log.d("TAG", message)
     }
+
+    fun toast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
 
 }

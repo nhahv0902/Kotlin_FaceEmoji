@@ -30,12 +30,15 @@ class ChoseActivity : BaseActivity() {
         binding.viewModel = viewModel
 
 
-        Timer().schedule(timerTask { switchActivity<HomeActivity>() }, 1000)
+        Timer().schedule(timerTask {
+            switchActivity<HomeActivity>()
+            finish()
+        }, 1000)
 //        camera.setOnClickListener { openCameraWithPermissionCheck() }
 //        gallery.setOnClickListener { startPickPicture() }
     }
 
-    private fun shareImageViaIntent(){
+    private fun shareImageViaIntent() {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/*"
         intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File("/storage/emulated/0/DCIM/Camera/IMG_20171023_184955_HDR.jpg")))
@@ -44,7 +47,7 @@ class ChoseActivity : BaseActivity() {
 
     @NeedsPermission(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun openCamera() {
-        val photoFile = createImageFile()
+        val photoFile = createImageFile("Face")
         viewModel.currentPath = photoFile?.path
         startCamera(photoFile)
     }

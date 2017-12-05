@@ -26,10 +26,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:focusable="true"
+            android:fontFamily="@font/caaviar"
             android:gravity="center"
             android:text="YouMoji"
             android:textColor="@android:color/white"
-            android:textSize="24sp"
+            android:textSize="32sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/editText"
             app:layout_constraintStart_toStartOf="parent"
@@ -38,15 +39,18 @@
         <EditText
             android:id="@+id/editText"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
+            android:layout_height="117dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/bg_editor"
             android:gravity="start"
             android:minHeight="120dp"
-            android:padding="16dp"
-            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@color/color_background"
+            android:textCursorDrawable="@null"
+            android:textSize="24sp"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView" />
@@ -55,8 +59,8 @@
             android:id="@+id/share"
             android:layout_width="80dp"
             android:layout_height="32dp"
-            android:layout_marginRight="0dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/bg_share"
             android:drawableLeft="@drawable/ic_sent"
             android:gravity="center_vertical"
@@ -109,7 +113,7 @@
             android:layout_marginTop="4dp"
             android:layout_weight="1"
             android:background="@android:color/white"
-            android:visibility="@{viewModel.isYourMoji ? View.VISIBLE : View.INVISIBLE}"
+            android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@+id/lineMore"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -123,7 +127,7 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:background="@android:color/white"
-            android:visibility="@{viewModel.isYourMoji ? View.INVISIBLE : View.VISIBLE}"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/lineYou"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -131,11 +135,10 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
-            android:layout_width="368dp"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="@color/color_background"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
+            android:background="@android:color/white"
+            android:visibility="@{viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
             app:adapter="@{viewModel.adapter}"
             app:layoutManager="android.support.v7.widget.GridLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/moreEmoji"
@@ -144,6 +147,22 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lineYou"
             app:spanCount="4" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView2"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@android:color/white"
+            android:visibility="@{!viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
+            app:adapter="@{viewModel.adapterMore}"
+            app:layoutManager="android.support.v7.widget.GridLayoutManager"
+            app:layout_constraintBottom_toTopOf="@id/moreEmoji"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lineYou"
+            app:spanCount="5" />
+
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/library"
@@ -171,18 +190,19 @@
                 app:fab_icon="@drawable/ic_collections_white_24dp" />
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
-        <TextView
+        <ImageButton
             android:id="@+id/font"
             style="@style/CustomTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="A"
+            android:layout_marginStart="24dp"
+            android:src="@drawable/ic_font"
             android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="@+id/share"
             app:layout_constraintEnd_toStartOf="@+id/typeFont"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="@+id/editText" />
 
         <TextView
             android:id="@+id/typeFont"
@@ -191,34 +211,30 @@
             android:layout_height="wrap_content"
             android:text="B"
             android:textColor="#DBA70D"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/font"
             app:layout_constraintEnd_toStartOf="@+id/sizeFont"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/font" />
 
-        <TextView
+        <ImageButton
             android:id="@+id/sizeFont"
             style="@style/CustomTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Size"
-            android:textStyle="normal"
+            android:src="@drawable/ic_text_height"
             app:layout_constraintBottom_toBottomOf="@+id/font"
-            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintEnd_toStartOf="@+id/colorFont"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/typeFont" />
 
-        <TextView
-            android:id="@+id/imageView2"
+        <ImageButton
+            android:id="@+id/colorFont"
             style="@style/CustomTextView"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:drawableLeft="@drawable/ic_brush"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_paint_brush"
             app:layout_constraintBottom_toBottomOf="@+id/font"
-            app:layout_constraintEnd_toStartOf="@+id/share"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/sizeFont"
             app:layout_constraintTop_toTopOf="@+id/sizeFont" />
 

@@ -11,5 +11,6 @@
     <color name="color_in_active_">#8396a8</color>
     <color name="color_active_">#efb294</color>
     <color name="color_grey_selected">#e9e7e7</color>
-
+    <color name="color_blue_">#29AF48</color>
+    <color name="color_ymoji">#ccc</color>
 </resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/small"
+        android:title="Small"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/medium"
+        android:title="Medium"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/high"
+        android:title="High"
+        app:showAsAction="ifRoom" />
+</menu>

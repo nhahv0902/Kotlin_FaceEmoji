@@ -6,12 +6,14 @@ import android.net.Uri
  * Created by nhahv on 10/19/17.
  */
 
-interface OnOpenDialogLibrary {
+interface IHomeListener {
     fun openDialog()
 
     fun setImagePicture(uri: Uri?)
 
-    fun setImagePicture(path: String?)
-
     fun editAddPicture(path: String)
+
+    fun showDialog()
+
+    fun hideDialog()
 }

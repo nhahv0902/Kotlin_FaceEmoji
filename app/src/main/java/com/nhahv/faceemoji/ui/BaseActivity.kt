@@ -6,10 +6,13 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
 import java.io.File
+
 
 /**
  * Created by nhahv0902 on 10/17/17.
@@ -47,7 +50,15 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
+    inline fun <reified T : AppCompatActivity> switchActivity(bundle: Bundle) {
+        startActivity(Intent(this, T::class.java).putExtras(bundle))
+    }
+
     inline fun <reified T : AppCompatActivity> switchActivity() {
         startActivity(Intent(this, T::class.java))
+    }
+
+    fun toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

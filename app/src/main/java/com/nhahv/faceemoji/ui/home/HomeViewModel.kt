@@ -6,6 +6,7 @@ import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -26,31 +27,39 @@ import com.theartofdev.edmodo.cropper.CropImage
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.BufferedOutputStream
-import java.io.ByteArrayOutputStream
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 
 
 /**
  * Created by nhahv0902 on 10/17/17.
  *
  */
-class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), OnItemListener<String> {
-    lateinit var onDialogLibrary: OnOpenDialogLibrary
+class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRecyclerAdapter.OnItemLongListener<String> {
+    lateinit var listener: IHomeListener
     var currentPath: String? = null
 
     val isYourMoji = ObservableBoolean(true)
 
     override fun onClick(item: String, position: Int) {
-        onDialogLibrary.editAddPicture(item)
+        listener.editAddPicture(item)
     }
 
-    var pictureLocal = ArrayList<String>()
+    override fun onLongClick(item: String, position: Int): Boolean {
+        navigator.log(item)
+        return false
+    }
+
     val pictures: ArrayList<String> = ArrayList()
     val adapter: ObservableField<BaseRecyclerAdapter<String>>
             = ObservableField(BaseRecyclerAdapter(pictures, this, R.layout.item_emoji))
 
+    val mores = ArrayList<String>()
+    val adapterMore: ObservableField<BaseRecyclerAdapter<String>> =
+            ObservableField(BaseRecyclerAdapter(mores, object : OnItemListener<String> {
+                override fun onClick(item: String, position: Int) {
+                    listener.editAddPicture(item)
+                }
+            }, R.layout.item_mores_emoji))
 
     val morePictures: ArrayList<FaceEmoji> = ArrayList()
     val moreAdapter: ObservableField<BaseRecyclerAdapter<FaceEmoji>> =
@@ -61,38 +70,36 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), OnItemL
             }, R.layout.item_more_emoji))
 
     init {
+        // set up bottom recycler more icon
         var temp = readFile()
         val pictureTemp: ArrayList<FaceEmoji> = Gson().fromJson(temp, object : TypeToken<List<FaceEmoji>>() {}.type)
         morePictures.addAll(pictureTemp)
+        morePictures[0].selected = true
         moreAdapter.notifyChange()
 
+        // setup recycler more icon
+        morePictures[0].items.mapTo(mores) { it.image }
+        adapterMore.notifyChange()
 
+        // setup recycler you emoji
         temp = readFile("you_emoji.json")
         temp?.let {
             val pictureTemp2: ArrayList<String> = Gson().fromJson(it, object : TypeToken<List<String>>() {}.type)
             pictures.addAll(pictureTemp2)
             adapter.notifyChange()
         }
-
-        pictureLocal.addAll(pictures)
     }
 
     fun loadPicture() {
-        val temp2 = ArrayList<String>(pictures)
-        pictures.clear()
-        pictures.addAll(loadPictures())
-        pictures.addAll(temp2)
+        pictures.addAll(0, loadPictures())
         adapter.notifyChange()
-
-        pictureLocal.clear()
-        pictureLocal.addAll(pictures)
     }
 
     fun onResultFromActivity(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode != RESULT_OK) return
         when (requestCode) {
             REQUEST_PICK_IMAGE -> {
-                onDialogLibrary.setImagePicture(data?.data)
+                listener.setImagePicture(data?.data)
             }
             REQUEST_IMAGE_CAPTURE -> {
                 handleImageCapture()
@@ -107,12 +114,9 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), OnItemL
     }
 
     private fun handleImageCapture() {
-        log("$currentPath")
         currentPath?.let {
             navigator.context.galleryAddPicture(it)
-            onDialogLibrary.setImagePicture(currentPath)
-            print(currentPath)
-            return
+            listener.setImagePicture(Uri.fromFile(File(it)))
         }
     }
 
@@ -136,6 +140,13 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), OnItemL
         return file?.path
     }
 
+    fun createFileImageFromBitmap(bitmap: Bitmap): String? {
+        val file = createImageFile("Face")
+        val os = BufferedOutputStream(FileOutputStream(file))
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
+        os.close()
+        return file?.path
+    }
 
     fun readFile(fileName: String = "database.json"): String? {
         return try {
@@ -151,45 +162,43 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), OnItemL
     }
 
     fun upFileImage(base64: String) {
+        listener.showDialog()
         NetworkService.getInstance(navigator.context).getAPI().uploadImage(base64).enqueue(object : Callback<String> {
             override fun onFailure(call: Call<String>?, t: Throwable?) {
+                listener.hideDialog()
                 navigator.log(t.toString())
+                navigator.toast("Not connect to server")
             }
 
             override fun onResponse(call: Call<String>?, response: Response<String>?) {
-                response?.let {
-                    if (it.isSuccessful) {
-                        it.body()?.let {
+                if (response != null) {
+                    if (response.isSuccessful) {
+                        response.body()?.let {
                             val pathFile = convertBase64ToFileImage(it)
                             pathFile?.let {
-                                pictureLocal.add(0, it)
                                 isYourMoji.set(true)
-                                pictures.clear()
-                                pictures.addAll(pictureLocal)
+                                pictures.add(0, it)
                                 adapter.notifyChange()
                             }
+                            return@let
                         }
+                    } else {
+                        navigator.toast("No detect face")
                     }
+                } else {
+                    navigator.toast("No detect face")
                 }
-
+                listener.hideDialog()
             }
         })
     }
 
     fun changeYouEmoji() {
         isYourMoji.set(true)
-        pictures.clear()
-        pictures.addAll(pictureLocal)
-        adapter.notifyChange()
     }
 
     fun changeMoreEmoji() {
         isYourMoji.set(false)
-        morePictures[0].selected = true
-        moreAdapter.get().notifyItemChanged(0)
-        pictures.clear()
-        morePictures[0].items.mapTo(pictures) { it.image }
-        adapter.notifyChange()
     }
 
     private fun moreEmojiClick(position: Int, item: FaceEmoji) {
@@ -201,9 +210,9 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), OnItemL
         }
         item.selected = true
         moreAdapter.get().notifyItemChanged(position)
-        pictures.clear()
-        morePictures[position].items.mapTo(pictures) { it.image }
-        adapter.notifyChange()
+        mores.clear()
+        morePictures[position].items.mapTo(mores) { it.image }
+        adapterMore.notifyChange()
     }
 
 }

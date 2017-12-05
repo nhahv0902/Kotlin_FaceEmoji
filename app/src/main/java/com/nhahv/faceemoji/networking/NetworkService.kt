@@ -1,28 +1,21 @@
 package com.nhahv.faceemoji.networking
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import com.nhahv.faceemoji.BuildConfig
 import com.nhahv.faceemoji.networking.middleware.InterceptorImpl
-import com.nhahv.faceemoji.networking.middleware.RxErrorHandlingCallAdapterFactory
 import com.nhahv.faceemoji.networking.service.BooleanAdapter
 import com.nhahv.faceemoji.networking.service.FaceEmojiAPI
 import com.nhahv.faceemoji.networking.service.IntegerAdapter
-import dagger.Module
-import dagger.Provides
 import okhttp3.Cache
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
 /**
  * Created by nhahv on 10/17/17.
