@@ -40,8 +40,8 @@
             android:id="@+id/editText"
             android:layout_width="match_parent"
             android:layout_height="117dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_editor"
             android:gravity="start"
@@ -58,18 +58,18 @@
         <TextView
             android:id="@+id/share"
             android:layout_width="80dp"
-            android:layout_height="32dp"
+            android:layout_height="0dp"
             android:layout_marginEnd="24dp"
-            android:layout_marginTop="16dp"
             android:background="@drawable/bg_share"
             android:drawableLeft="@drawable/ic_sent"
             android:gravity="center_vertical"
             android:text="Send"
             android:textAllCaps="true"
             android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@id/font"
             app:layout_constraintEnd_toEndOf="@+id/editText"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editText" />
+            app:layout_constraintTop_toTopOf="@id/font" />
 
         <TextView
             android:id="@+id/layoutYour"
@@ -138,6 +138,8 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="@android:color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:visibility="@{viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
             app:adapter="@{viewModel.adapter}"
             app:layoutManager="android.support.v7.widget.GridLayoutManager"
@@ -153,6 +155,8 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="@android:color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:visibility="@{!viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
             app:adapter="@{viewModel.adapterMore}"
             app:layoutManager="android.support.v7.widget.GridLayoutManager"
@@ -196,13 +200,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
+            android:layout_marginTop="12dp"
             android:src="@drawable/ic_font"
             android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="@+id/share"
             app:layout_constraintEnd_toStartOf="@+id/typeFont"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="@+id/editText" />
+            app:layout_constraintStart_toStartOf="@+id/editText"
+            app:layout_constraintTop_toBottomOf="@id/editText" />
 
         <TextView
             android:id="@+id/typeFont"

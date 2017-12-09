@@ -13,4 +13,5 @@
     <color name="color_grey_selected">#e9e7e7</color>
     <color name="color_blue_">#29AF48</color>
     <color name="color_ymoji">#ccc</color>
+    <color name="color_text_emoji">#ccc</color>
 </resources>

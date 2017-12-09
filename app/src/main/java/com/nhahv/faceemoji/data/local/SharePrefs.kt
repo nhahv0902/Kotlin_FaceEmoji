@@ -19,25 +19,27 @@ class SharePrefs private constructor(val context: Context) {
                     INSTANCE ?: SharePrefs(context).also { INSTANCE = it }
                 }
     }
-}
 
-@Suppress("UNCHECKED_CAST")
-fun <T> SharedPreferences.get(key: String, type: TypeSharePrefs): T? =
-        when (type) {
-            TypeSharePrefs.STRING -> getString(key, null) as T
-            TypeSharePrefs.BOOLEAN -> getBoolean(key, false) as T
-            TypeSharePrefs.INT -> getInt(key, 0) as T
-            TypeSharePrefs.FLOAT -> getFloat(key, 0f) as T
+    @Suppress("UNCHECKED_CAST")
+    fun <T> get(key: String, type: Class<T>): T? =
+            when (type) {
+                String::class.java -> sharePrefs.getString(key, null) as T
+                Boolean::class.java -> sharePrefs.getBoolean(key, false) as T
+                Int::class.java -> sharePrefs.getInt(key, 0) as T
+                Float::class.java -> sharePrefs.getFloat(key, 0f) as T
+                else -> null
+            }
+
+    fun <T> put(key: String, value: T) {
+        when (value) {
+            is String -> sharePrefs.edit().putString(key, value).apply()
+            is Int -> sharePrefs.edit().putInt(key, value).apply()
+            is Float -> sharePrefs.edit().putFloat(key, value).apply()
+            is Boolean -> sharePrefs.edit().putBoolean(key, value).apply()
         }
-
-fun <T> SharedPreferences.put(key: String, value: T) {
-    when (value) {
-        is String -> edit().putString(key, value).apply()
-        is Int -> edit().putInt(key, value).apply()
-        is Float -> edit().putFloat(key, value).apply()
-        is Boolean -> edit().putBoolean(key, value).apply()
     }
 }
+
 
 enum class TypeSharePrefs {
     STRING, INT, BOOLEAN, FLOAT

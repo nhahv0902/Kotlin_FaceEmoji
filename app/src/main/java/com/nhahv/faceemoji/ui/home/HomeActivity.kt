@@ -15,22 +15,24 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.content.res.ResourcesCompat
 import android.text.Editable
 import android.text.style.ImageSpan
+import android.util.Log
 import android.util.SparseArray
 import android.widget.Toast
 import com.google.android.gms.vision.Frame
 import com.google.android.gms.vision.face.Face
 import com.google.android.gms.vision.face.FaceDetector
+import com.google.gson.Gson
 import com.jaredrummler.android.colorpicker.ColorPickerDialog
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import com.nhahv.faceemoji.R
-import com.nhahv.faceemoji.databinding.ActivityHomeBinding
-import com.nhahv.faceemoji.databinding.BottomFontsBinding
-import com.nhahv.faceemoji.databinding.DialogFontSizeBinding
-import com.nhahv.faceemoji.databinding.DialogLibraryBinding
+import com.nhahv.faceemoji.data.local.SharePrefs
+import com.nhahv.faceemoji.databinding.*
 import com.nhahv.faceemoji.ui.BaseActivity
+import com.nhahv.faceemoji.ui.emoji.EmojiActivity
 import com.nhahv.faceemoji.ui.view.FaceProgressDialog
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.dpToPx
+import com.nhahv.faceemoji.utils.PREF_YOU_MOJI
 import com.nhahv.faceemoji.utils.hideSoftKeyboard
 import com.nhahv.faceemoji.utils.showSoftKeyboard
 import com.theartofdev.edmodo.cropper.CropImage
@@ -187,7 +189,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
             //            detectFace(uri)
             CropImage.activity(uri)
                     .setAspectRatio(1, 1)
-                    .setRequestedSize(350, 350)
+                    .setRequestedSize(700, 700)
                     .setOutputCompressQuality(100)
                     .start(this)
         }
@@ -215,10 +217,15 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun share() {
         val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "image/*"
-        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
-        startActivity(Intent.createChooser(intent, "share Image"))
+//        val intent = Intent(Intent.ACTION_SEND)
+//        intent.type = "image/*"
+//        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
+//        startActivity(Intent.createChooser(intent, "share Image"))
+
+
+        val bundle = Bundle()
+        bundle.putString("image", pathFile)
+        switchActivity<EmojiActivity>(bundle)
     }
 
 
@@ -263,32 +270,53 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
      * */
 
     private fun loadBitmapFromEdit(): Bitmap {
-        val color = editText.currentTextColor
+
+        val gText = "@youmoji"
         editText.isCursorVisible = false
         editText.setBackgroundColor(Color.WHITE)
         editText.setSelection(editText.text.length)
-        editText.setTextColor(ContextCompat.getColor(this, R.color.color_blue_))
 
         val width = editText.width
         val height: Int = editText.height
 
-        val padding = dpToPx(this, 5.0f).toInt()
         editText.selectionEnd
 
-        val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val c = Canvas(b)
-        val p = Paint()
-        p.setARGB(0, 0, 0, 0)
-        p.style = Paint.Style.FILL
-        p.color = Color.BLACK
-        c.drawText("@ymoji", padding.toFloat(), padding.toFloat(), p)
-//        c.drawRoundRect(RectF(0.0f, 0.0f, width.toFloat(), height.toFloat()), padding.toFloat(), padding.toFloat(), p)
+        val scale = resources.displayMetrics.density
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bitmap)
         editText.layout(editText.left, editText.top, editText.right, editText.bottom)
         editText.draw(c)
         editText.isCursorVisible = true
         editText.setBackgroundResource(R.drawable.bg_editor)
-        editText.setTextColor(color)
-        return b
+        font.setImageBitmap(bitmap)
+
+        val x = bitmap.width - 200
+        val y = bitmap.height - 20
+        var bitmapConfig: android.graphics.Bitmap.Config? = bitmap.config
+        // set default bitmap config if none
+        if (bitmapConfig == null) {
+            bitmapConfig = android.graphics.Bitmap.Config.ARGB_8888
+        }
+        // resource bitmaps are imutable,
+        // so we need to convert it to mutable one
+        val bitmaptemp = bitmap.copy(bitmapConfig, true)
+        val canvas = Canvas(bitmaptemp)
+        // new antialised Paint
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        // text color - #3D3D3D
+        paint.color = ContextCompat.getColor(this, R.color.color_text_emoji)
+        // text size in pixels
+        paint.textSize = (16 * scale).toInt().toFloat()
+        // text shadow
+        paint.setShadowLayer(1f, 0f, 1f, Color.WHITE)
+
+        // draw text to the Canvas center
+        val bounds = Rect()
+        paint.getTextBounds(gText, 0, gText.length, bounds)
+        canvas.drawText(gText, x.toFloat(), y.toFloat(), paint)
+
+        return bitmaptemp
     }
 
     private fun detectFace(uri: Uri) {
@@ -350,5 +378,29 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
 
     override fun hideDialog() {
         if (progressDialog != null && progressDialog!!.isShowing) progressDialog!!.dismiss()
+    }
+
+    override fun removePicture(item: String, position: Int) {
+        val mBottomSheetDialog = BottomSheetDialog(this)
+        val binding: BottomRemoteImageBinding = BottomRemoteImageBinding.inflate(layoutInflater, null)
+        mBottomSheetDialog.setContentView(binding.root)
+        binding.delete.setOnClickListener {
+            if (item.contains("you/")) {
+                viewModel.picturesAsset.remove(item)
+                val json = Gson().toJson(viewModel.picturesAsset)
+                SharePrefs.getInstance(this).put(PREF_YOU_MOJI, json)
+                Log.d("TAG", json)
+            } else {
+                val file = File(item)
+                if (file.exists()) {
+                    val deleted = file.delete()
+                    Log.d("TAG", "$deleted")
+                }
+            }
+            viewModel.pictures.remove(item)
+            viewModel.adapter.get().notifyItemRemoved(position)
+            mBottomSheetDialog.dismiss()
+        }
+        mBottomSheetDialog.show()
     }
 }

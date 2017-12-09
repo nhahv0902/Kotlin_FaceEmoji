@@ -16,4 +16,6 @@ interface IHomeListener {
     fun showDialog()
 
     fun hideDialog()
+
+    fun removePicture(item: String, position: Int)
 }

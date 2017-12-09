@@ -7,10 +7,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
+import com.nhahv.faceemoji.data.local.SharePrefs
 import java.io.File
 
 
@@ -24,6 +26,10 @@ open class BaseActivity : AppCompatActivity() {
     companion object {
         const val REQUEST_PICK_IMAGE = 1
         const val REQUEST_IMAGE_CAPTURE = 2
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+        super.onCreate(savedInstanceState, persistentState)
     }
 
     inline fun <reified T : ViewModel> obtainViewModel(

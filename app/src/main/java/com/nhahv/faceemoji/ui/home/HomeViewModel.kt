@@ -21,6 +21,7 @@ import com.nhahv.faceemoji.ui.BaseViewModel
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.loadPictures
 import com.nhahv.faceemoji.utils.Navigator
+import com.nhahv.faceemoji.utils.PREF_YOU_MOJI
 import com.nhahv.faceemoji.utils.START_BASE64
 import com.nhahv.faceemoji.utils.galleryAddPicture
 import com.theartofdev.edmodo.cropper.CropImage
@@ -45,10 +46,11 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     }
 
     override fun onLongClick(item: String, position: Int): Boolean {
-        navigator.log(item)
+        listener.removePicture(item, position)
         return false
     }
 
+    val picturesAsset = ArrayList<String>()
     val pictures: ArrayList<String> = ArrayList()
     val adapter: ObservableField<BaseRecyclerAdapter<String>>
             = ObservableField(BaseRecyclerAdapter(pictures, this, R.layout.item_emoji))
@@ -81,13 +83,22 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         morePictures[0].items.mapTo(mores) { it.image }
         adapterMore.notifyChange()
 
-        // setup recycler you emoji
-        temp = readFile("you_emoji.json")
+        val youEmoji = navigator.sharePref.get(PREF_YOU_MOJI, String::class.java)
+        if (youEmoji.isNullOrEmpty()) {
+            temp = readFile(PREF_YOU_MOJI)
+            navigator.sharePref.put(PREF_YOU_MOJI, temp)
+        } else {
+            temp = navigator.sharePref.get(PREF_YOU_MOJI, String::class.java)
+
+        }
         temp?.let {
             val pictureTemp2: ArrayList<String> = Gson().fromJson(it, object : TypeToken<List<String>>() {}.type)
             pictures.addAll(pictureTemp2)
+            picturesAsset.addAll(pictureTemp2)
             adapter.notifyChange()
         }
+        // setup recycler you emoji
+
     }
 
     fun loadPicture() {
@@ -100,6 +111,9 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         when (requestCode) {
             REQUEST_PICK_IMAGE -> {
                 listener.setImagePicture(data?.data)
+//                data?.let {
+//                    upFileImage(convertFileImageToString(it.data.toString()))
+//                }
             }
             REQUEST_IMAGE_CAPTURE -> {
                 handleImageCapture()
