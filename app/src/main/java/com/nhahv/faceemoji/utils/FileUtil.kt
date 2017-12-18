@@ -56,6 +56,7 @@ object FileUtil {
         listOfFiles
                 .filter { it.isFile && (it.path.endsWith(".png") or it.path.endsWith(".jpg")) }
                 .mapTo(pictures) { it.path }
+        pictures.sortDescending()
         return pictures
     }
 }

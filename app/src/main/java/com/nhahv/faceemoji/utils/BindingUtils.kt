@@ -5,6 +5,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.View
 import android.widget.ImageView
+import com.bumptech.glide.Glide
+import com.nhahv.faceemoji.R
 import java.io.File
 
 /**
@@ -26,10 +28,10 @@ fun bindSelected(view: View, isSelected: Boolean) {
 @BindingAdapter(value = *arrayOf("imageFile", "imageFileError"), requireAll = false)
 fun bindImageFile(view: ImageView, imageFile: String?, error: Drawable) {
     imageFile?.let {
-        if (it.contains("img/") or it.contains("you/")) {
-            GlideApp.with(view.context).load(Uri.parse("$START_ASSET$it")).error(error).into(view)
-        } else {
-            GlideApp.with(view.context).load(File(it)).error(error).into(view)
+        when {
+            it.isEmpty() -> Glide.with(view.context).load(R.drawable.create).into(view)
+            it.contains("img/") or it.contains("you/") -> GlideApp.with(view.context).load(Uri.parse("$START_ASSET$it")).error(error).into(view)
+            else -> GlideApp.with(view.context).load(File(it)).error(error).into(view)
         }
     }
 }

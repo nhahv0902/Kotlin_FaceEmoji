@@ -3,11 +3,14 @@ package com.nhahv.faceemoji.ui.home
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.databinding.DataBindingUtil
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialog
@@ -17,6 +20,7 @@ import android.text.Editable
 import android.text.style.ImageSpan
 import android.util.Log
 import android.util.SparseArray
+import android.view.Gravity
 import android.widget.Toast
 import com.google.android.gms.vision.Frame
 import com.google.android.gms.vision.face.Face
@@ -27,9 +31,8 @@ import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import com.nhahv.faceemoji.R
 import com.nhahv.faceemoji.data.local.SharePrefs
 import com.nhahv.faceemoji.databinding.*
+import com.nhahv.faceemoji.networking.receiver.NetworkReceiver
 import com.nhahv.faceemoji.ui.BaseActivity
-import com.nhahv.faceemoji.ui.emoji.EmojiActivity
-import com.nhahv.faceemoji.ui.view.FaceProgressDialog
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.dpToPx
 import com.nhahv.faceemoji.utils.PREF_YOU_MOJI
@@ -44,12 +47,13 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 @RuntimePermissions
-class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
+class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, NetworkReceiver.NetworkReceiverListener {
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var detector: FaceDetector
+    private var mNetworkReceiver: NetworkReceiver? = null
 
-    var progressDialog: FaceProgressDialog? = null
+    var progressDialog: ProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +61,8 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
         loadPictureWithPermissionCheck()
 
         viewModel.listener = this
+        mNetworkReceiver = NetworkReceiver()
+        mNetworkReceiver?.setNetworkListener(this)
 
         val binding: ActivityHomeBinding = DataBindingUtil.setContentView(this, R.layout.activity_home)
         binding.viewModel = viewModel
@@ -68,7 +74,13 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
                 .setLandmarkType(FaceDetector.ALL_LANDMARKS)
                 .build()
 
+        registerNetworkBroadcastForNougat()
     }
+
+    private fun registerNetworkBroadcastForNougat() {
+        registerReceiver(mNetworkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+    }
+
 
     private fun events() {
         camera.setOnClickListener {
@@ -153,7 +165,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
                     .setDialogType(ColorPickerDialog.TYPE_PRESETS)
                     .setAllowPresets(true)
                     .setDialogId(0)
-                    .setColor(Color.BLUE)
+                    .setColor(ContextCompat.getColor(this, R.color.color_background))
                     .setShowAlphaSlider(true)
                     .show(this)
         }
@@ -189,7 +201,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
             //            detectFace(uri)
             CropImage.activity(uri)
                     .setAspectRatio(1, 1)
-                    .setRequestedSize(700, 700)
+                    .setRequestedSize(400, 400)
                     .setOutputCompressQuality(100)
                     .start(this)
         }
@@ -217,15 +229,15 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun share() {
         val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
-//        val intent = Intent(Intent.ACTION_SEND)
-//        intent.type = "image/*"
-//        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
-//        startActivity(Intent.createChooser(intent, "share Image"))
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "image/*"
+        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
+        startActivity(Intent.createChooser(intent, "share Image"))
 
 
-        val bundle = Bundle()
-        bundle.putString("image", pathFile)
-        switchActivity<EmojiActivity>(bundle)
+//        val bundle = Bundle()
+//        bundle.putString("image", pathFile)
+//        switchActivity<EmojiActivity>(bundle)
     }
 
 
@@ -269,6 +281,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
      * Load bitmap
      * */
 
+    @SuppressLint("SetTextI18n")
     private fun loadBitmapFromEdit(): Bitmap {
 
         val gText = "@youmoji"
@@ -276,23 +289,22 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
         editText.setBackgroundColor(Color.WHITE)
         editText.setSelection(editText.text.length)
 
+        editText.gravity = Gravity.CENTER
+        editText.height = editText.height + 60
         val width = editText.width
         val height: Int = editText.height
 
         editText.selectionEnd
 
-        val scale = resources.displayMetrics.density
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val c = Canvas(bitmap)
+        editText.setPadding(editText.paddingLeft + 40, editText.paddingTop, editText.paddingRight + 40, editText.paddingBottom)
         editText.layout(editText.left, editText.top, editText.right, editText.bottom)
         editText.draw(c)
-        editText.isCursorVisible = true
-        editText.setBackgroundResource(R.drawable.bg_editor)
-        font.setImageBitmap(bitmap)
 
-        val x = bitmap.width - 200
-        val y = bitmap.height - 20
+
+        val y = bitmap.height - 70
         var bitmapConfig: android.graphics.Bitmap.Config? = bitmap.config
         // set default bitmap config if none
         if (bitmapConfig == null) {
@@ -307,16 +319,27 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
         // text color - #3D3D3D
         paint.color = ContextCompat.getColor(this, R.color.color_text_emoji)
         // text size in pixels
-        paint.textSize = (16 * scale).toInt().toFloat()
+        paint.textSize = 32f
         // text shadow
         paint.setShadowLayer(1f, 0f, 1f, Color.WHITE)
+        paint.textAlign = Paint.Align.RIGHT
 
         // draw text to the Canvas center
         val bounds = Rect()
-        paint.getTextBounds(gText, 0, gText.length, bounds)
-        canvas.drawText(gText, x.toFloat(), y.toFloat(), paint)
 
-        return bitmaptemp
+        paint.getTextBounds(gText, 0, gText.length, bounds)
+        canvas.drawText(gText, width.toFloat() - 180, y.toFloat(), paint)
+
+        editText.isCursorVisible = true
+        editText.setBackgroundResource(R.drawable.bg_editor)
+
+        editText.gravity = Gravity.START
+        editText.setText("")
+        editText.setPadding(editText.paddingLeft - 40, editText.paddingTop, editText.paddingRight - 40, editText.paddingBottom)
+
+        editText.height = editText.height - 60
+//        return Bitmap.createScaledBitmap(bitmaptemp, (400 * width) / height, 400, true)
+        return Bitmap.createScaledBitmap(bitmaptemp, width, height, true)
     }
 
     private fun detectFace(uri: Uri) {
@@ -358,6 +381,9 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
     override fun onDestroy() {
         super.onDestroy()
         detector.release()
+        mNetworkReceiver?.let {
+            unregisterReceiver(it)
+        }
     }
 
     override fun onColorSelected(dialogId: Int, color: Int) {
@@ -370,7 +396,8 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
 
     override fun showDialog() {
         if (progressDialog == null) {
-            progressDialog = FaceProgressDialog(this)
+            progressDialog = ProgressDialog(this)
+            progressDialog!!.setMessage("Processing")
             progressDialog!!.setCancelable(false)
         }
         if (!progressDialog!!.isShowing) progressDialog!!.show()
@@ -398,9 +425,43 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener {
                 }
             }
             viewModel.pictures.remove(item)
-            viewModel.adapter.get().notifyItemRemoved(position)
+            viewModel.adapter.notifyChange()
             mBottomSheetDialog.dismiss()
         }
         mBottomSheetDialog.show()
+    }
+
+    override fun onNetworkConnectChange(isConnected: Boolean) {
+        viewModel.isNoNetwork.set(isConnected)
+    }
+
+    override fun showBottomSheetLibrary() {
+        showBottomSheetGallery()
+    }
+
+    private fun showBottomSheetGallery() {
+        val bottomSheet = BottomSheetDialog(this)
+        val binding = BottomLibraryBinding.inflate(layoutInflater, null, false)
+        bottomSheet.setContentView(binding.root)
+        binding.textCamera.setOnClickListener {
+            openCameraWithPermissionCheck()
+            bottomSheet.dismiss()
+        }
+        binding.camera.setOnClickListener {
+            openCameraWithPermissionCheck()
+            bottomSheet.dismiss()
+
+        }
+        binding.gallery.setOnClickListener {
+            startPickPicture()
+            bottomSheet.dismiss()
+
+        }
+        binding.textGallery.setOnClickListener {
+            startPickPicture()
+            bottomSheet.dismiss()
+
+        }
+        bottomSheet.show()
     }
 }

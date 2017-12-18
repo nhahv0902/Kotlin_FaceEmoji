@@ -41,13 +41,22 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
 
     val isYourMoji = ObservableBoolean(true)
 
+    val isNoNetwork = ObservableBoolean(true)
+
     override fun onClick(item: String, position: Int) {
-        listener.editAddPicture(item)
+        if (position == 0 && item.isEmpty()) {
+            listener.showBottomSheetLibrary()
+        } else {
+            listener.editAddPicture(item)
+        }
     }
 
     override fun onLongClick(item: String, position: Int): Boolean {
+        if (position == 0 && pictures[0].isEmpty()){
+            return true
+        }
         listener.removePicture(item, position)
-        return false
+        return true
     }
 
     val picturesAsset = ArrayList<String>()
@@ -102,7 +111,12 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     }
 
     fun loadPicture() {
-        pictures.addAll(0, loadPictures())
+        val temps = loadPictures()
+        if (temps.size == 0) {
+            pictures.add(0, "")
+        } else {
+            pictures.addAll(0, temps)
+        }
         adapter.notifyChange()
     }
 
@@ -176,6 +190,10 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     }
 
     fun upFileImage(base64: String) {
+        if (!isNoNetwork.get()) {
+            navigator.toast("Please, connect network to create picture!")
+            return
+        }
         listener.showDialog()
         NetworkService.getInstance(navigator.context).getAPI().uploadImage(base64).enqueue(object : Callback<String> {
             override fun onFailure(call: Call<String>?, t: Throwable?) {
@@ -191,7 +209,11 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                             val pathFile = convertBase64ToFileImage(it)
                             pathFile?.let {
                                 isYourMoji.set(true)
-                                pictures.add(0, it)
+                                if (pictures[0].isEmpty()) {
+                                    pictures[0] = it
+                                } else {
+                                    pictures.add(0, it)
+                                }
                                 adapter.notifyChange()
                             }
                             return@let
