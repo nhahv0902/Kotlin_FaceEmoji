@@ -30,7 +30,7 @@ fun bindImageFile(view: ImageView, imageFile: String?, error: Drawable) {
     imageFile?.let {
         when {
             it.isEmpty() -> Glide.with(view.context).load(R.drawable.create).into(view)
-            it.contains("img/") or it.contains("you/") -> GlideApp.with(view.context).load(Uri.parse("$START_ASSET$it")).error(error).into(view)
+            it.contains("img/") or it.contains("you/") or it.contains("sticker/") -> GlideApp.with(view.context).load(Uri.parse("$START_ASSET$it")).error(error).into(view)
             else -> GlideApp.with(view.context).load(File(it)).error(error).into(view)
         }
     }

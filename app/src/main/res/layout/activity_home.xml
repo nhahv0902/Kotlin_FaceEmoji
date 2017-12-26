@@ -5,8 +5,9 @@
 
     <data>
 
-
         <import type="android.view.View" />
+
+        <import type="com.nhahv.faceemoji.ui.home.Emo" />
 
         <variable
             name="viewModel"
@@ -46,10 +47,10 @@
             android:background="@drawable/bg_editor"
             android:gravity="start"
             android:minHeight="150dp"
+            android:paddingBottom="20dp"
             android:paddingLeft="30dp"
             android:paddingRight="30dp"
             android:paddingTop="20dp"
-            android:paddingBottom="20dp"
             android:textColor="@color/color_background"
             android:textCursorDrawable="@null"
             android:textSize="24sp"
@@ -79,13 +80,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:drawableLeft="@{viewModel.isYourMoji ? @drawable/ic_you_moji_yellow : @drawable/ic_you_moji}"
+            android:drawableLeft="@{viewModel.emoType == 0 ? @drawable/ic_you_moji_yellow : @drawable/ic_you_moji}"
             android:gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:text="YouMoji"
+            android:text="YOU"
             android:textAllCaps="true"
-            android:textColor="@{viewModel.isYourMoji ? @color/color_active_ :@color/color_in_active_}"
+            android:textColor="@{viewModel.emoType == 0 ? @color/color_active_ :@color/color_in_active_}"
             app:layout_constraintEnd_toStartOf="@+id/layoutMore"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -95,17 +96,33 @@
             android:id="@+id/layoutMore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@{!viewModel.isYourMoji ? @drawable/ic_more_moji_yellow : @drawable/ic_more_moji_grey}"
+            android:drawableLeft="@{viewModel.emoType == 1 ? @drawable/ic_more_moji_yellow : @drawable/ic_more_moji_grey}"
             android:gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:text="More"
+            android:text="EMO"
             android:textAllCaps="true"
-            android:textColor="@{!viewModel.isYourMoji ? @color/color_active_ :@color/color_in_active_}"
+            android:textColor="@{viewModel.emoType == 1 ? @color/color_active_ :@color/color_in_active_}"
             app:layout_constraintBottom_toBottomOf="@id/layoutYour"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/layoutSticker"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/layoutYour" />
+
+        <TextView
+            android:id="@+id/layoutSticker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@{viewModel.emoType == 2 ? @drawable/ic_fireball_active : @drawable/ic_fireball_un_active}"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Sticker"
+            android:textAllCaps="true"
+            android:textColor="@{viewModel.emoType == 2 ? @color/color_active_ :@color/color_in_active_}"
+            app:layout_constraintBottom_toBottomOf="@id/layoutMore"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/layoutMore" />
 
         <View
             android:id="@+id/lineYou"
@@ -143,7 +160,7 @@
             android:background="@android:color/white"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            android:visibility="@{viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
+            android:visibility="@{viewModel.emoType == 0 ||  viewModel.emoType == 2 ? View.VISIBLE : View.GONE}"
             app:adapter="@{viewModel.adapter}"
             app:layoutManager="android.support.v7.widget.GridLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/moreEmoji"
@@ -160,7 +177,7 @@
             android:background="@android:color/white"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            android:visibility="@{!viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
+            android:visibility="@{viewModel.emoType == 1 ? View.VISIBLE : View.GONE}"
             app:adapter="@{viewModel.adapterMore}"
             app:layoutManager="android.support.v7.widget.GridLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/moreEmoji"
@@ -252,7 +269,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:visibility="@{!viewModel.isYourMoji ? View.VISIBLE : View.GONE}"
+            android:visibility="@{viewModel.emoType == 1  ? View.VISIBLE : View.GONE}"
             app:adapter="@{viewModel.moreAdapter}"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@+id/network"

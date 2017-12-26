@@ -111,6 +111,8 @@ dependencies {
     implementation 'com.google.android.gms:play-services-vision:11.6.2'
 
     implementation 'com.jaredrummler:colorpicker:1.0.1'
+
+    compile 'com.soundcloud.android:android-crop:1.0.1@aar'
 }
 
 

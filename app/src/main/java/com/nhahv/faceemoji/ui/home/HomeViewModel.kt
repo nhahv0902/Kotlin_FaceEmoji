@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
+import android.databinding.ObservableInt
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -18,12 +19,10 @@ import com.nhahv.faceemoji.ui.BaseActivity.Companion.REQUEST_PICK_IMAGE
 import com.nhahv.faceemoji.ui.BaseRecyclerAdapter
 import com.nhahv.faceemoji.ui.BaseRecyclerAdapter.OnItemListener
 import com.nhahv.faceemoji.ui.BaseViewModel
+import com.nhahv.faceemoji.utils.*
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.loadPictures
-import com.nhahv.faceemoji.utils.Navigator
-import com.nhahv.faceemoji.utils.PREF_YOU_MOJI
-import com.nhahv.faceemoji.utils.START_BASE64
-import com.nhahv.faceemoji.utils.galleryAddPicture
+import com.soundcloud.android.crop.Crop
 import com.theartofdev.edmodo.cropper.CropImage
 import retrofit2.Call
 import retrofit2.Callback
@@ -39,7 +38,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     lateinit var listener: IHomeListener
     var currentPath: String? = null
 
-    val isYourMoji = ObservableBoolean(true)
+    val emoType = ObservableInt(Emo.YOU)
 
     val isNoNetwork = ObservableBoolean(true)
 
@@ -52,7 +51,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     }
 
     override fun onLongClick(item: String, position: Int): Boolean {
-        if (position == 0 && pictures[0].isEmpty()){
+        if (emoType.get() == Emo.STICKER || (position == 0 && pictures[0].isEmpty())) {
             return true
         }
         listener.removePicture(item, position)
@@ -80,43 +79,60 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                 }
             }, R.layout.item_more_emoji))
 
+
+    // sticker
+    val stickerPictures: ArrayList<String> = ArrayList()
+    val youPictures: ArrayList<String> = ArrayList()
+
     init {
-        // set up bottom recycler more icon
-        var temp = readFile()
+        loadEMO()
+        loadSticker()
+    }
+
+    private fun loadEMO() {
+        var temp = navigator.sharePref.get(PREF_EMO_EMO, String::class.java)
+        if (temp.isNullOrEmpty()) {
+            temp = readFile(PREF_EMO_EMO)
+            navigator.sharePref.put(PREF_EMO_EMO, temp)
+        }
         val pictureTemp: ArrayList<FaceEmoji> = Gson().fromJson(temp, object : TypeToken<List<FaceEmoji>>() {}.type)
         morePictures.addAll(pictureTemp)
         morePictures[0].selected = true
         moreAdapter.notifyChange()
-
-        // setup recycler more icon
         morePictures[0].items.mapTo(mores) { it.image }
         adapterMore.notifyChange()
+    }
 
-        val youEmoji = navigator.sharePref.get(PREF_YOU_MOJI, String::class.java)
-        if (youEmoji.isNullOrEmpty()) {
-            temp = readFile(PREF_YOU_MOJI)
-            navigator.sharePref.put(PREF_YOU_MOJI, temp)
-        } else {
-            temp = navigator.sharePref.get(PREF_YOU_MOJI, String::class.java)
-
+    private fun loadSticker() {
+        var temp = navigator.sharePref.get(PREF_STICKER_EMO, String::class.java)
+        if (temp.isNullOrEmpty()) {
+            temp = readFile(PREF_STICKER_EMO)
+            navigator.sharePref.put(PREF_STICKER_EMO, temp)
         }
-        temp?.let {
+        val pictureTemp: ArrayList<String> = Gson().fromJson(temp, object : TypeToken<List<String>>() {}.type)
+        stickerPictures.addAll(pictureTemp)
+    }
+
+
+    fun loadYouEMO() {
+        var youEmoji = navigator.sharePref.get(PREF_YOU_MOJI, String::class.java)
+        if (youEmoji.isNullOrEmpty()) {
+            youEmoji = readFile(PREF_YOU_MOJI)
+            navigator.sharePref.put(PREF_YOU_MOJI, youEmoji)
+        }
+        youEmoji?.let {
             val pictureTemp2: ArrayList<String> = Gson().fromJson(it, object : TypeToken<List<String>>() {}.type)
-            pictures.addAll(pictureTemp2)
+            youPictures.addAll(pictureTemp2)
             picturesAsset.addAll(pictureTemp2)
             adapter.notifyChange()
         }
-        // setup recycler you emoji
-
-    }
-
-    fun loadPicture() {
         val temps = loadPictures()
         if (temps.size == 0) {
-            pictures.add(0, "")
+            youPictures.add(0, "")
         } else {
-            pictures.addAll(0, temps)
+            youPictures.addAll(0, temps)
         }
+        pictures.addAll(youPictures)
         adapter.notifyChange()
     }
 
@@ -136,6 +152,9 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                 val result = CropImage.getActivityResult(data)
                 upFileImage(convertFileImageToString(result.uri.path))
 
+            }
+            Crop.REQUEST_CROP -> {
+                upFileImage(convertFileImageToString(Crop.getOutput(data).path))
             }
             else -> log("null")
         }
@@ -208,7 +227,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                         response.body()?.let {
                             val pathFile = convertBase64ToFileImage(it)
                             pathFile?.let {
-                                isYourMoji.set(true)
+                                emoType.set(Emo.YOU)
                                 if (pictures[0].isEmpty()) {
                                     pictures[0] = it
                                 } else {
@@ -229,14 +248,6 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         })
     }
 
-    fun changeYouEmoji() {
-        isYourMoji.set(true)
-    }
-
-    fun changeMoreEmoji() {
-        isYourMoji.set(false)
-    }
-
     private fun moreEmojiClick(position: Int, item: FaceEmoji) {
         for ((index, value) in morePictures.withIndex()) {
             if (value.selected) {
@@ -251,4 +262,23 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         adapterMore.notifyChange()
     }
 
+    fun updateYouEmo() {
+        pictures.clear()
+        pictures.addAll(youPictures)
+        adapter.notifyChange()
+        emoType.set(Emo.YOU)
+    }
+
+    fun updateEmo() {
+        emoType.set(Emo.EMO)
+    }
+
+    fun updateSticker() {
+        pictures.clear()
+        pictures.addAll(stickerPictures)
+        adapter.notifyChange()
+        emoType.set(Emo.STICKER)
+    }
+
 }
+

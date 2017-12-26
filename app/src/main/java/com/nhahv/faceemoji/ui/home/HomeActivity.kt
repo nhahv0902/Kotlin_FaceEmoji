@@ -38,6 +38,7 @@ import com.nhahv.faceemoji.utils.FileUtil.dpToPx
 import com.nhahv.faceemoji.utils.PREF_YOU_MOJI
 import com.nhahv.faceemoji.utils.hideSoftKeyboard
 import com.nhahv.faceemoji.utils.showSoftKeyboard
+import com.soundcloud.android.crop.Crop
 import com.theartofdev.edmodo.cropper.CropImage
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
@@ -100,11 +101,14 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
         layoutYour.setOnClickListener {
             hideSoftKeyboard()
-            viewModel.changeYouEmoji()
+            viewModel.updateYouEmo()
         }
         layoutMore.setOnClickListener {
             hideSoftKeyboard()
-            viewModel.changeMoreEmoji()
+            viewModel.updateEmo()
+        }
+        layoutSticker.setOnClickListener {
+            viewModel.updateSticker()
         }
 
         font.setOnClickListener {
@@ -196,21 +200,23 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         dialog.show()
     }
 
+
     override fun setImagePicture(uri: Uri?) {
         uri?.let {
             //            detectFace(uri)
-            CropImage.activity(uri)
+            /*CropImage.activity(uri)
                     .setAspectRatio(1, 1)
-                    .setRequestedSize(400, 400)
                     .setOutputCompressQuality(100)
-                    .start(this)
+                    .start(this)*/
+            val outputUri = Uri.fromFile(File(cacheDir, "cropped"))
+            Crop.of(uri, outputUri).asSquare().start(this)
         }
     }
 
     override fun editAddPicture(path: String) {
         showSoftKeyboard(editText)
         try {
-            if (path.contains("img/") or path.contains("you/")) {
+            if (path.contains("img/") or path.contains("you/") or path.contains("sticker/")) {
                 insert("(", Drawable.createFromStream(assets.open(path), null))
             } else {
                 insert("(", Drawable.createFromPath(path))
@@ -222,7 +228,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
     @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     fun loadPicture() {
-        viewModel.loadPicture()
+        viewModel.loadYouEMO()
     }
 
 
@@ -258,6 +264,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         viewModel.onResultFromActivity(requestCode, resultCode, data)
+
     }
 
     /**
@@ -424,7 +431,9 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
                     Log.d("TAG", "$deleted")
                 }
             }
-            viewModel.pictures.remove(item)
+            viewModel.youPictures.remove(item)
+            viewModel.pictures.clear()
+            viewModel.pictures.addAll(viewModel.youPictures)
             viewModel.adapter.notifyChange()
             mBottomSheetDialog.dismiss()
         }
