@@ -38,14 +38,11 @@ import com.nhahv.faceemoji.utils.FileUtil.dpToPx
 import com.nhahv.faceemoji.utils.PREF_YOU_MOJI
 import com.nhahv.faceemoji.utils.hideSoftKeyboard
 import com.nhahv.faceemoji.utils.showSoftKeyboard
-import com.soundcloud.android.crop.Crop
 import com.theartofdev.edmodo.cropper.CropImage
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
+import java.io.*
 
 @RuntimePermissions
 class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, NetworkReceiver.NetworkReceiverListener {
@@ -204,12 +201,13 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
     override fun setImagePicture(uri: Uri?) {
         uri?.let {
             //            detectFace(uri)
-            /*CropImage.activity(uri)
+            CropImage.activity(uri)
                     .setAspectRatio(1, 1)
                     .setOutputCompressQuality(100)
-                    .start(this)*/
-            val outputUri = Uri.fromFile(File(cacheDir, "cropped"))
-            Crop.of(uri, outputUri).asSquare().start(this)
+//                    .setRequestedSize(500,500)
+                    .start(this)
+//            val outputUri = Uri.fromFile(File(cacheDir, "cropped"))
+//            Crop.of(uri, outputUri).asSquare().start(this)
         }
     }
 
@@ -226,7 +224,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         }
     }
 
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun loadPicture() {
         viewModel.loadYouEMO()
     }
@@ -446,6 +444,28 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
     override fun showBottomSheetLibrary() {
         showBottomSheetGallery()
+    }
+
+    override fun shareSticker(item: String) {
+
+
+        val input: BufferedReader = BufferedReader(InputStreamReader(assets.open(item), "UTF-8"))
+
+//        String mLine;
+//        while ((mLine = reader.readLine()) != null) {
+//            //process line
+//            ...
+//        }
+        val file = File("content://com.nhahv.faceemoji/$item")
+        val uri = Uri.parse("content://com.nhahv.faceemoji/$item")
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "image/*"
+        intent.putExtra(Intent.EXTRA_STREAM, uri)
+        startActivity(Intent.createChooser(intent, "share Image"))
+    }
+
+    private fun createFile(){
+//        File.createTempFile();
     }
 
     private fun showBottomSheetGallery() {

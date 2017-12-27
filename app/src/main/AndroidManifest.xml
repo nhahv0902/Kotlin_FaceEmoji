@@ -25,6 +25,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <provider
+            android:name=".utils.AssetsProvider"
+            android:authorities="com.nhahv.faceemoji"
+            android:exported="true"
+            android:grantUriPermissions="true" />
 
         <activity
             android:name=".ui.home.HomeActivity"
@@ -48,6 +53,7 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
+
         <receiver
             android:name=".networking.receiver.NetworkReceiver"
             android:enabled="true">

@@ -12,7 +12,6 @@ import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
-import com.nhahv.faceemoji.data.local.SharePrefs
 import java.io.File
 
 

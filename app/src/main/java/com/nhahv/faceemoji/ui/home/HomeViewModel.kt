@@ -24,6 +24,9 @@ import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.loadPictures
 import com.soundcloud.android.crop.Crop
 import com.theartofdev.edmodo.cropper.CropImage
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -46,7 +49,11 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         if (position == 0 && item.isEmpty()) {
             listener.showBottomSheetLibrary()
         } else {
-            listener.editAddPicture(item)
+            if (emoType.get() == Emo.YOU) {
+                listener.editAddPicture(item)
+            }else if (emoType.get() == Emo.STICKER){
+                listener.shareSticker(item)
+            }
         }
     }
 
@@ -141,20 +148,17 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         when (requestCode) {
             REQUEST_PICK_IMAGE -> {
                 listener.setImagePicture(data?.data)
-//                data?.let {
-//                    upFileImage(convertFileImageToString(it.data.toString()))
-//                }
             }
             REQUEST_IMAGE_CAPTURE -> {
                 handleImageCapture()
             }
             CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE -> {
                 val result = CropImage.getActivityResult(data)
-                upFileImage(convertFileImageToString(result.uri.path))
+                upFileImage(result.uri.path)
 
             }
             Crop.REQUEST_CROP -> {
-                upFileImage(convertFileImageToString(Crop.getOutput(data).path))
+                //                upFileImage(convertFileImageToString(Crop.getOutput(data).path))
             }
             else -> log("null")
         }
@@ -176,15 +180,19 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     }
 
     fun convertBase64ToFileImage(base64: String): String? {
-        val temp = base64.removePrefix(START_BASE64)
-        val imageBytes: ByteArray = Base64.decode(temp, Base64.DEFAULT)
-        val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        return try {
+            val temp = base64.removePrefix(START_BASE64)
+            val imageBytes: ByteArray = Base64.decode(temp, Base64.DEFAULT)
+            val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
-        val file = createImageFile()
-        val os = BufferedOutputStream(FileOutputStream(file))
-        decodedImage.compress(Bitmap.CompressFormat.JPEG, 100, os)
-        os.close()
-        return file?.path
+            val file = createImageFile()
+            val os = BufferedOutputStream(FileOutputStream(file))
+            decodedImage.compress(Bitmap.CompressFormat.JPEG, 100, os)
+            os.close()
+            file?.path
+        }catch (ex: NullPointerException){
+            null
+        }
     }
 
     fun createFileImageFromBitmap(bitmap: Bitmap): String? {
@@ -208,25 +216,26 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         }
     }
 
-    fun upFileImage(base64: String) {
+    fun upFileImage(pathFile: String) {
         if (!isNoNetwork.get()) {
             navigator.toast("Please, connect network to create picture!")
             return
         }
         listener.showDialog()
-        NetworkService.getInstance(navigator.context).getAPI().uploadImage(base64).enqueue(object : Callback<String> {
-            override fun onFailure(call: Call<String>?, t: Throwable?) {
-                listener.hideDialog()
-                navigator.log(t.toString())
-                navigator.toast("Not connect to server")
-            }
+        val file: File = File(pathFile)
+        val requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file)
+        val body: MultipartBody.Part = MultipartBody.Part.createFormData(file.path, file.name, requestFile)
 
+        val description = RequestBody.create(MediaType.parse("multipart/form-data"), "upFile")
+//        upFileImage
+
+        NetworkService.getInstance(navigator.context).getAPI().upFileImage(description, body).enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 if (response != null) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            val pathFile = convertBase64ToFileImage(it)
-                            pathFile?.let {
+                            val pathFileTemp = convertBase64ToFileImage(it)
+                            pathFileTemp?.let {
                                 emoType.set(Emo.YOU)
                                 if (pictures[0].isEmpty()) {
                                     pictures[0] = it
@@ -245,6 +254,13 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                 }
                 listener.hideDialog()
             }
+
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
+                listener.hideDialog()
+                navigator.log(t.toString())
+                navigator.toast("Not connect to server")
+            }
+
         })
     }
 

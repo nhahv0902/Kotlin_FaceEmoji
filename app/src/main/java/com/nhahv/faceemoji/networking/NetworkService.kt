@@ -67,6 +67,7 @@ class NetworkService(private val application: Context) {
 
     companion object {
         private val CONNECTION_TIMEOUT = 60
+//        val END_POINT_URL = "http://139.59.112.147/"
         val END_POINT_URL = "http://139.59.112.147/"
 
         @SuppressLint("StaticFieldLeak")

@@ -20,4 +20,6 @@ interface IHomeListener {
     fun removePicture(item: String, position: Int)
 
     fun showBottomSheetLibrary()
+
+    fun shareSticker(item: String)
 }
