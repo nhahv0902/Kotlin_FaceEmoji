@@ -15,9 +15,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialog
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
 import android.support.v4.content.res.ResourcesCompat
 import android.text.Editable
 import android.text.style.ImageSpan
+import android.util.Base64
 import android.util.Log
 import android.util.SparseArray
 import android.view.Gravity
@@ -204,7 +206,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             CropImage.activity(uri)
                     .setAspectRatio(1, 1)
                     .setOutputCompressQuality(100)
-//                    .setRequestedSize(500,500)
+                    .setRequestedSize(500, 500)
                     .start(this)
 //            val outputUri = Uri.fromFile(File(cacheDir, "cropped"))
 //            Crop.of(uri, outputUri).asSquare().start(this)
@@ -324,7 +326,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         // text color - #3D3D3D
         paint.color = ContextCompat.getColor(this, R.color.color_text_emoji)
         // text size in pixels
-        paint.textSize = 32f
+        paint.textSize = 44f
         // text shadow
         paint.setShadowLayer(1f, 0f, 1f, Color.WHITE)
         paint.textAlign = Paint.Align.RIGHT
@@ -448,24 +450,28 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
     override fun shareSticker(item: String) {
 
+        val bm = BitmapFactory.decodeStream(assets.open(item))
 
-        val input: BufferedReader = BufferedReader(InputStreamReader(assets.open(item), "UTF-8"))
+        val baos = ByteArrayOutputStream()
+        bm.compress(Bitmap.CompressFormat.PNG, 100, baos) //bm is the bitmap object
+        val base64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
 
-//        String mLine;
-//        while ((mLine = reader.readLine()) != null) {
-//            //process line
-//            ...
-//        }
-        val file = File("content://com.nhahv.faceemoji/$item")
-        val uri = Uri.parse("content://com.nhahv.faceemoji/$item")
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "image/*"
-        intent.putExtra(Intent.EXTRA_STREAM, uri)
-        startActivity(Intent.createChooser(intent, "share Image"))
+        val input = BufferedReader(InputStreamReader(assets.open(item), "UTF-8"))
+
+        val pathFile = createImageFile("Face")
+        pathFile?.let {
+
+            val photoURI = FileProvider.getUriForFile(this, packageName, it)
+            viewModel.convertBase64ToFileImageCache(it, base64)
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "image/*"
+            intent.putExtra(Intent.EXTRA_STREAM, photoURI)
+            startActivity(Intent.createChooser(intent, "share Image"))
+        }
     }
 
-    private fun createFile(){
-//        File.createTempFile();
+    private fun createFile(path: String) {
+
     }
 
     private fun showBottomSheetGallery() {

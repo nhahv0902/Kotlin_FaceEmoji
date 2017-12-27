@@ -107,12 +107,13 @@ dependencies {
     //    implementation 'com.localytics.android:library:4.0.1'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.8'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
-    implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
+//    implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
     implementation 'com.google.android.gms:play-services-vision:11.6.2'
 
     implementation 'com.jaredrummler:colorpicker:1.0.1'
 
     compile 'com.soundcloud.android:android-crop:1.0.1@aar'
+    compile project(path: ':cropper')
 }
 
 

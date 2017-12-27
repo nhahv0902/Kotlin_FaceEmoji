@@ -51,7 +51,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         } else {
             if (emoType.get() == Emo.YOU) {
                 listener.editAddPicture(item)
-            }else if (emoType.get() == Emo.STICKER){
+            } else if (emoType.get() == Emo.STICKER) {
                 listener.shareSticker(item)
             }
         }
@@ -181,7 +181,11 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
 
     fun convertBase64ToFileImage(base64: String): String? {
         return try {
-            val temp = base64.removePrefix(START_BASE64)
+            val temp = if (base64.contains(START_BASE64)) {
+                base64.removePrefix(START_BASE64)
+            } else {
+                base64
+            }
             val imageBytes: ByteArray = Base64.decode(temp, Base64.DEFAULT)
             val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
@@ -190,7 +194,26 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
             decodedImage.compress(Bitmap.CompressFormat.JPEG, 100, os)
             os.close()
             file?.path
-        }catch (ex: NullPointerException){
+        } catch (ex: NullPointerException) {
+            null
+        }
+    }
+
+    fun convertBase64ToFileImageCache(file: File, base64: String): File? {
+        return try {
+            val temp = if (base64.contains(START_BASE64)) {
+                base64.removePrefix(START_BASE64)
+            } else {
+                base64
+            }
+            val imageBytes: ByteArray = Base64.decode(temp, Base64.DEFAULT)
+            val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+            val os = BufferedOutputStream(FileOutputStream(file))
+            decodedImage.compress(Bitmap.CompressFormat.JPEG, 100, os)
+            os.close()
+            file
+        } catch (ex: NullPointerException) {
             null
         }
     }

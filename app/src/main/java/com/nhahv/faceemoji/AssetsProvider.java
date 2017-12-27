@@ -1,4 +1,4 @@
-package com.nhahv.faceemoji.utils;
+package com.nhahv.faceemoji;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -7,18 +7,14 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.CancellationSignal;
-import android.util.Log;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import static android.content.ContentValues.TAG;
 
 public class AssetsProvider extends ContentProvider {
 
     @Override
     public AssetFileDescriptor openAssetFile(Uri uri, String mode) throws FileNotFoundException {
-        Log.v(TAG, "AssetsGetter: Open asset file");
         AssetManager am = getContext().getAssets();
         String file_name = uri.getLastPathSegment();
         if (file_name == null)

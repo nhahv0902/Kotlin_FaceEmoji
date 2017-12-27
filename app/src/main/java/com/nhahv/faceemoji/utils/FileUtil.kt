@@ -38,7 +38,7 @@ object FileUtil {
             val nameFile = "IMG_" + SimpleDateFormat("yyyyMMdd_HHmmss_",
                     Locale.getDefault()).format(Date())
             val albumFile = getAlbumDir(folder)
-            File.createTempFile(nameFile, ".jpg", albumFile)
+            File.createTempFile(nameFile, ".png", albumFile)
         } catch (ex: IOException) {
             null
         }
@@ -59,4 +59,7 @@ object FileUtil {
         pictures.sortDescending()
         return pictures
     }
+
+    fun createFileFromCache(context: Context, nameFile: String): File =
+            File.createTempFile("", ".png", context.cacheDir)
 }
