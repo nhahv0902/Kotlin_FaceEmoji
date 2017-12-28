@@ -44,7 +44,10 @@ import com.theartofdev.edmodo.cropper.CropImage
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 
 @RuntimePermissions
 class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, NetworkReceiver.NetworkReceiverListener {
@@ -234,12 +237,15 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun share() {
-        val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "image/*"
-        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
-        startActivity(Intent.createChooser(intent, "share Image"))
 
+        val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
+        pathFile?.let {
+            val photoURI = FileProvider.getUriForFile(this, packageName, it)
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "image/*"
+            intent.putExtra(Intent.EXTRA_STREAM, photoURI)
+            startActivity(Intent.createChooser(intent, "share Image"))
+        }
 
 //        val bundle = Bundle()
 //        bundle.putString("image", pathFile)
@@ -455,9 +461,6 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         val baos = ByteArrayOutputStream()
         bm.compress(Bitmap.CompressFormat.PNG, 100, baos) //bm is the bitmap object
         val base64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
-
-        val input = BufferedReader(InputStreamReader(assets.open(item), "UTF-8"))
-
         val pathFile = createImageFile("Face")
         pathFile?.let {
 

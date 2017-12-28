@@ -22,7 +22,6 @@ import com.nhahv.faceemoji.ui.BaseViewModel
 import com.nhahv.faceemoji.utils.*
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
 import com.nhahv.faceemoji.utils.FileUtil.loadPictures
-import com.soundcloud.android.crop.Crop
 import com.theartofdev.edmodo.cropper.CropImage
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -157,9 +156,6 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                 upFileImage(result.uri.path)
 
             }
-            Crop.REQUEST_CROP -> {
-                //                upFileImage(convertFileImageToString(Crop.getOutput(data).path))
-            }
             else -> log("null")
         }
     }
@@ -218,12 +214,12 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
         }
     }
 
-    fun createFileImageFromBitmap(bitmap: Bitmap): String? {
+    fun createFileImageFromBitmap(bitmap: Bitmap): File? {
         val file = createImageFile("Face")
         val os = BufferedOutputStream(FileOutputStream(file))
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
         os.close()
-        return file?.path
+        return file
     }
 
     fun readFile(fileName: String = "database.json"): String? {
@@ -260,11 +256,13 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                             val pathFileTemp = convertBase64ToFileImage(it)
                             pathFileTemp?.let {
                                 emoType.set(Emo.YOU)
-                                if (pictures[0].isEmpty()) {
-                                    pictures[0] = it
+                                if (youPictures[0].isEmpty()) {
+                                    youPictures[0] = it
                                 } else {
-                                    pictures.add(0, it)
+                                    youPictures.add(0, it)
                                 }
+                                pictures.clear()
+                                pictures.addAll(youPictures)
                                 adapter.notifyChange()
                             }
                             return@let
