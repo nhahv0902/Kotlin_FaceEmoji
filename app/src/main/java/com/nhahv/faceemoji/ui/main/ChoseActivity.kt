@@ -8,12 +8,16 @@ import android.net.Uri
 import android.os.Bundle
 import com.nhahv.faceemoji.R
 import com.nhahv.faceemoji.databinding.ActivityChoseBinding
+import com.nhahv.faceemoji.networking.NetworkService
+import com.nhahv.faceemoji.networking.NetworkService.Companion.BASE_POINT_URL
 import com.nhahv.faceemoji.ui.BaseActivity
 import com.nhahv.faceemoji.ui.home.HomeActivity
 import com.nhahv.faceemoji.utils.FileUtil.createImageFile
+import org.jetbrains.anko.doAsync
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
 import java.io.File
+import java.net.URL
 import java.util.*
 import kotlin.concurrent.timerTask
 
@@ -36,6 +40,11 @@ class ChoseActivity : BaseActivity() {
         }, 1000)
 //        camera.setOnClickListener { openCameraWithPermissionCheck() }
 //        gallery.setOnClickListener { startPickPicture() }
+
+        doAsync {
+            val result = URL(BASE_POINT_URL).readText()
+            NetworkService.END_POINT_URL = result
+        }
     }
 
     private fun shareImageViaIntent() {

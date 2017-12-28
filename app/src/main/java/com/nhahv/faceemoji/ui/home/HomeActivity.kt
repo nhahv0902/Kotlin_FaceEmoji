@@ -44,11 +44,17 @@ import com.theartofdev.edmodo.cropper.CropImage
 import kotlinx.android.synthetic.main.activity_home.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 
 @RuntimePermissions
 class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, NetworkReceiver.NetworkReceiverListener {
 
+    companion object {
+        val SHARE_IMAGE = 1123
+    }
     private lateinit var viewModel: HomeViewModel
     private lateinit var detector: FaceDetector
     private var mNetworkReceiver: NetworkReceiver? = null
@@ -173,6 +179,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
                     .show(this)
         }
 
+
     }
 
     override fun openDialog() {
@@ -206,7 +213,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             CropImage.activity(uri)
                     .setAspectRatio(1, 1)
                     .setOutputCompressQuality(100)
-                    .setRequestedSize(500, 500)
+                    .setRequestedSize(400, 400)
                     .start(this)
 //            val outputUri = Uri.fromFile(File(cacheDir, "cropped"))
 //            Crop.of(uri, outputUri).asSquare().start(this)
@@ -234,12 +241,15 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun share() {
-        val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "image/*"
-        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(pathFile)))
-        startActivity(Intent.createChooser(intent, "share Image"))
 
+        val pathFile = viewModel.createFileImageFromBitmap(loadBitmapFromEdit())
+        pathFile?.let {
+            val photoURI = FileProvider.getUriForFile(this, packageName, it)
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "image/*"
+            intent.putExtra(Intent.EXTRA_STREAM, photoURI)
+            startActivityForResult(Intent.createChooser(intent, "share Image"), SHARE_IMAGE)
+        }
 
 //        val bundle = Bundle()
 //        bundle.putString("image", pathFile)
@@ -272,7 +282,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
      *
      */
     private fun insert(emoticon: String, drawable: Drawable) {
-        val width = dpToPx(editText.context, 68f).toInt()
+        val width = dpToPx(editText.context, 76f).toInt()
         drawable.setBounds(0, 0, width, width)
         val span = ImageSpan(drawable, 0)
         val start = editText.selectionStart
@@ -297,7 +307,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         editText.setSelection(editText.text.length)
 
         editText.gravity = Gravity.CENTER
-        editText.height = editText.height + 60
+        editText.height = editText.height
         val width = editText.width
         val height: Int = editText.height
 
@@ -306,12 +316,12 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val c = Canvas(bitmap)
-        editText.setPadding(editText.paddingLeft + 40, editText.paddingTop, editText.paddingRight + 40, editText.paddingBottom)
+        editText.setPadding(editText.paddingLeft, editText.paddingTop, editText.paddingRight, editText.paddingBottom)
         editText.layout(editText.left, editText.top, editText.right, editText.bottom)
         editText.draw(c)
 
 
-        val y = bitmap.height - 70
+        val y = bitmap.height - 50
         var bitmapConfig: android.graphics.Bitmap.Config? = bitmap.config
         // set default bitmap config if none
         if (bitmapConfig == null) {
@@ -341,10 +351,9 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         editText.setBackgroundResource(R.drawable.bg_editor)
 
         editText.gravity = Gravity.START
-        editText.setText("")
-        editText.setPadding(editText.paddingLeft - 40, editText.paddingTop, editText.paddingRight - 40, editText.paddingBottom)
+        editText.setPadding(editText.paddingLeft, editText.paddingTop, editText.paddingRight, editText.paddingBottom)
 
-        editText.height = editText.height - 60
+//        editText.height = editText.height
 //        return Bitmap.createScaledBitmap(bitmaptemp, (400 * width) / height, 400, true)
         return Bitmap.createScaledBitmap(bitmaptemp, width, height, true)
     }
@@ -455,9 +464,6 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         val baos = ByteArrayOutputStream()
         bm.compress(Bitmap.CompressFormat.PNG, 100, baos) //bm is the bitmap object
         val base64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
-
-        val input = BufferedReader(InputStreamReader(assets.open(item), "UTF-8"))
-
         val pathFile = createImageFile("Face")
         pathFile?.let {
 
@@ -472,6 +478,10 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
     private fun createFile(path: String) {
 
+    }
+
+    override fun removeText() {
+        editText.setText("")
     }
 
     private fun showBottomSheetGallery() {

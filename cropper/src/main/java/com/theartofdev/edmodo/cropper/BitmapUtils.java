@@ -380,7 +380,7 @@ final class BitmapUtils {
         needSave = false;
       }
       if (needSave) {
-        writeBitmapToUri(context, bitmap, uri, Bitmap.CompressFormat.JPEG, 95);
+        writeBitmapToUri(context, bitmap, uri, Bitmap.CompressFormat.PNG, 100);
       }
       return uri;
     } catch (Exception e) {

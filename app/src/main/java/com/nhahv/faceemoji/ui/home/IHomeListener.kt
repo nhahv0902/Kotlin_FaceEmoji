@@ -22,4 +22,6 @@ interface IHomeListener {
     fun showBottomSheetLibrary()
 
     fun shareSticker(item: String)
+
+    fun removeText()
 }

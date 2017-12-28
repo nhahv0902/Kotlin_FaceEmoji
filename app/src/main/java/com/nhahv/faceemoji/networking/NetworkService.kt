@@ -65,10 +65,22 @@ class NetworkService(private val application: Context) {
         return retrofit.create(FaceEmojiAPI::class.java)
     }
 
+
+    fun getAPI(url: String): FaceEmojiAPI {
+        val retrofit = Retrofit.Builder()
+                .baseUrl(url)
+                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
+                .client(OkHttpClient())
+                .build()
+        return retrofit.create(FaceEmojiAPI::class.java)
+    }
+
     companion object {
         private val CONNECTION_TIMEOUT = 60
+        //        val END_POINT_URL = "http://139.59.112.147/"
 //        val END_POINT_URL = "http://139.59.112.147/"
-        val END_POINT_URL = "http://139.59.112.147/"
+        var END_POINT_URL = "http://128.199.145.205:8080/get_ip"
+        val BASE_POINT_URL = "http://128.199.145.205:8080/get_ip"
 
         @SuppressLint("StaticFieldLeak")
         private var INSTANCE: NetworkService? = null

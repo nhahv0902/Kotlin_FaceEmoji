@@ -342,7 +342,7 @@ public final class CropImage {
     Uri outputFileUri = null;
     File getImage = context.getExternalCacheDir();
     if (getImage != null) {
-      outputFileUri = Uri.fromFile(new File(getImage.getPath(), "pickImageResult.jpeg"));
+      outputFileUri = Uri.fromFile(new File(getImage.getPath(), "pickImageResult.png"));
     }
     return outputFileUri;
   }

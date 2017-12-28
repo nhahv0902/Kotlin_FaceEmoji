@@ -9,3 +9,7 @@
 .externalNativeBuild
 /.idea/*
 .idea/*
+cropper/build/*
+cropper/build
+/cropper/build/*
+/cropper/build/outputs/logs/manifest-merger-debug-report.txt
