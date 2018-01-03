@@ -14,20 +14,19 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/splashscreen"
+        android:background="#0080F9"
         tools:context="com.nhahv.faceemoji.ui.main.ChoseActivity">
 
 
         <ImageView
             android:id="@+id/background"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter"
+            android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/bg_sticker" />
+            app:srcCompat="@drawable/splashscreen" />
 
         <LinearLayout
             android:id="@+id/camera"

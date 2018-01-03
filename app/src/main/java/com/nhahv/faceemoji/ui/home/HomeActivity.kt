@@ -154,15 +154,15 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             val dialog = build.create()
 
             binding.normal.setOnClickListener {
-                editText.textSize = 18f
+                editText.textSize = 26f
                 dialog.dismiss()
             }
             binding.large.setOnClickListener {
-                editText.textSize = 24f
+                editText.textSize = 34f
                 dialog.dismiss()
             }
             binding.huge.setOnClickListener {
-                editText.textSize = 30f
+                editText.textSize = 42f
                 dialog.dismiss()
             }
             dialog.show()
