@@ -35,6 +35,7 @@
             android:onClick="@{() -> listener.onClick(item, position)}"
             android:onLongClick="@{() -> listener.onLongClick(item, position) }"
             android:scaleType="centerCrop"
+            android:src="@drawable/create"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

@@ -137,11 +137,8 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
             adapter.notifyChange()
         }
         val temps = loadPictures()
-        if (temps.size == 0) {
-            youPictures.add(0, "")
-        } else {
-            youPictures.addAll(0, temps)
-        }
+        youPictures.add(0, "")
+        youPictures.addAll(1, temps)
         pictures.addAll(youPictures)
         adapter.notifyChange()
     }
@@ -281,13 +278,10 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                             val pathFileTemp = convertBase64ToFileImage(it)
                             pathFileTemp?.let {
                                 emoType.set(Emo.YOU)
-                                if (youPictures[0].isEmpty()) {
-                                    youPictures[0] = it
-                                } else {
-                                    youPictures.add(0, it)
-                                }
+                                youPictures.add(1, it)
                                 pictures.clear()
                                 pictures.addAll(youPictures)
+                                listener.showToastRemoveEmo()
                                 adapter.notifyChange()
                             }
                             return@let

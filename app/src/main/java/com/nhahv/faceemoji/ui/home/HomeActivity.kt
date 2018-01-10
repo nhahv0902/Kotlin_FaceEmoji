@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.support.design.widget.BottomSheetDialog
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
@@ -23,6 +24,8 @@ import android.util.Base64
 import android.util.Log
 import android.util.SparseArray
 import android.view.Gravity
+import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import com.google.android.gms.vision.Frame
 import com.google.android.gms.vision.face.Face
@@ -55,6 +58,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
     companion object {
         val SHARE_IMAGE = 1123
     }
+
     private lateinit var viewModel: HomeViewModel
     private lateinit var detector: FaceDetector
     private var mNetworkReceiver: NetworkReceiver? = null
@@ -117,7 +121,6 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         }
 
         font.setOnClickListener {
-            showSoftKeyboard(editText)
             val build = AlertDialog.Builder(this)
             val binding: BottomFontsBinding = BottomFontsBinding.inflate(layoutInflater, null, false)
             build.setView(binding.root)
@@ -126,10 +129,12 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             binding.sansSerif.setOnClickListener {
                 editText.typeface = ResourcesCompat.getFont(this, R.font.sans_serif)
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
             binding.trebutchetMS.setOnClickListener {
                 editText.typeface = ResourcesCompat.getFont(this, R.font.trebutchet)
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
             binding.comicSans.setOnClickListener {
                 editText.typeface = ResourcesCompat.getFont(this, R.font.comic)
@@ -138,16 +143,18 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             binding.caviarDreams.setOnClickListener {
                 editText.typeface = ResourcesCompat.getFont(this, R.font.caaviar)
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
             binding.pacifico.setOnClickListener {
                 editText.typeface = ResourcesCompat.getFont(this, R.font.pacifico)
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
+            dialog.window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             dialog.show()
         }
 
         sizeFont.setOnClickListener {
-            showSoftKeyboard(editText)
             val build = AlertDialog.Builder(this)
             val binding: DialogFontSizeBinding = DialogFontSizeBinding.inflate(layoutInflater, null, false)
             build.setView(binding.root)
@@ -156,15 +163,19 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             binding.normal.setOnClickListener {
                 editText.textSize = 26f
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
             binding.large.setOnClickListener {
                 editText.textSize = 34f
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
             binding.huge.setOnClickListener {
                 editText.textSize = 42f
                 dialog.dismiss()
+                showSoftKeyboard(editText)
             }
+            dialog.window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             dialog.show()
         }
 
@@ -202,6 +213,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             startPickPicture()
             dialog.dismiss()
         }
+        dialog.window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         dialog.setContentView(binding.root)
         dialog.show()
     }
@@ -508,5 +520,12 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
         }
         bottomSheet.show()
+    }
+
+    override fun showToastRemoveEmo() {
+        msgRemoveEmo.visibility = View.VISIBLE
+        Handler().postDelayed({
+            msgRemoveEmo.visibility = View.GONE
+        }, 6000)
     }
 }

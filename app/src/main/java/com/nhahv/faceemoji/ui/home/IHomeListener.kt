@@ -24,4 +24,7 @@ interface IHomeListener {
     fun shareSticker(item: String)
 
     fun removeText()
+
+    fun showToastRemoveEmo()
+
 }

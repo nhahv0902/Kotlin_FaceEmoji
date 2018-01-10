@@ -60,7 +60,7 @@ class NetworkService(private val application: Context) {
         val retrofit = Retrofit.Builder()
                 .baseUrl(END_POINT_URL)
                 .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
-                .client(OkHttpClient())
+                .client(createOkHttpClient())
                 .build()
         return retrofit.create(FaceEmojiAPI::class.java)
     }
@@ -76,7 +76,7 @@ class NetworkService(private val application: Context) {
     }
 
     companion object {
-        private val CONNECTION_TIMEOUT = 60
+        private val CONNECTION_TIMEOUT = 30
         //        val END_POINT_URL = "http://139.59.112.147/"
 //        val END_POINT_URL = "http://139.59.112.147/"
         var END_POINT_URL = "http://128.199.145.205:8080/get_ip"
