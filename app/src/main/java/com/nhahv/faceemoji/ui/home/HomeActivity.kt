@@ -85,6 +85,8 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
                 .build()
 
         registerNetworkBroadcastForNougat()
+        editText.textSize = 24f
+
     }
 
     private fun registerNetworkBroadcastForNougat() {
@@ -161,17 +163,17 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
             val dialog = build.create()
 
             binding.normal.setOnClickListener {
-                editText.textSize = 26f
+                editText.textSize = 22f
                 dialog.dismiss()
                 showSoftKeyboard(editText)
             }
             binding.large.setOnClickListener {
-                editText.textSize = 34f
+                editText.textSize = 24f
                 dialog.dismiss()
                 showSoftKeyboard(editText)
             }
             binding.huge.setOnClickListener {
-                editText.textSize = 42f
+                editText.textSize = 32f
                 dialog.dismiss()
                 showSoftKeyboard(editText)
             }
@@ -294,7 +296,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
      *
      */
     private fun insert(emoticon: String, drawable: Drawable) {
-        val width = dpToPx(editText.context, 76f).toInt()
+        val width = dpToPx(editText.context, 84f).toInt()
         drawable.setBounds(0, 0, width, width)
         val span = ImageSpan(drawable, 0)
         val start = editText.selectionStart
@@ -348,7 +350,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
         // text color - #3D3D3D
         paint.color = ContextCompat.getColor(this, R.color.color_text_emoji)
         // text size in pixels
-        paint.textSize = 44f
+        paint.textSize = 50f
         // text shadow
         paint.setShadowLayer(1f, 0f, 1f, Color.WHITE)
         paint.textAlign = Paint.Align.RIGHT

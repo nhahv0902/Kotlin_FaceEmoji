@@ -61,7 +61,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
     }
 
     override fun onLongClick(item: String, position: Int): Boolean {
-        if (emoType.get() == Emo.STICKER || (position == 0 && pictures[0].isEmpty())) {
+        if (emoType.get() == Emo.STICKER ) {
             return true
         }
         listener.removePicture(item, position)
@@ -137,8 +137,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
             adapter.notifyChange()
         }
         val temps = loadPictures()
-        youPictures.add(0, "")
-        youPictures.addAll(1, temps)
+        youPictures.addAll(0, temps)
         pictures.addAll(youPictures)
         adapter.notifyChange()
     }
@@ -278,7 +277,7 @@ class HomeViewModel(private val navigator: Navigator) : BaseViewModel(), BaseRec
                             val pathFileTemp = convertBase64ToFileImage(it)
                             pathFileTemp?.let {
                                 emoType.set(Emo.YOU)
-                                youPictures.add(1, it)
+                                youPictures.add(0, it)
                                 pictures.clear()
                                 pictures.addAll(youPictures)
                                 listener.showToastRemoveEmo()
