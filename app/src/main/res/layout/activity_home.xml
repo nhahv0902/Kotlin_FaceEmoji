@@ -82,7 +82,7 @@
             android:id="@+id/layoutYour"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:drawableLeft="@{viewModel.emoType == 0 ? @drawable/ic_you_moji_yellow : @drawable/ic_you_moji}"
             android:gravity="center"
             android:paddingLeft="16dp"
@@ -218,6 +218,7 @@
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
         <ImageButton
+            android:visibility="invisible"
             android:id="@+id/font"
             style="@style/CustomTextView"
             android:layout_width="wrap_content"

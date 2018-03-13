@@ -21,7 +21,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -303,25 +302,13 @@ public class CropImageActivity extends AppCompatActivity
                 String ext = ".png";
                 String nameFile = "IMG_" + new SimpleDateFormat("yyyyMMdd_HHmmss_",
                         Locale.getDefault()).format(new Date());
-                outputUri = Uri.fromFile(File.createTempFile(nameFile, ".png", getAlbumDir()));
+                outputUri = Uri.fromFile(File.createTempFile(nameFile, ".png", getCacheDir()));
 
             } catch (IOException e) {
                 throw new RuntimeException("Failed to create temp file for output image", e);
             }
         }
         return outputUri;
-    }
-
-    private File getAlbumDir() {
-        File storageDir = null;
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Face");
-            if (!storageDir.mkdirs() && !storageDir.exists()) {
-                return null;
-            }
-        } else {
-        }
-        return storageDir;
     }
 
     /**

@@ -76,7 +76,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
 
         val binding: ActivityHomeBinding = DataBindingUtil.setContentView(this, R.layout.activity_home)
         binding.viewModel = viewModel
-        editText.typeface = ResourcesCompat.getFont(this, R.font.comic)
+//        editText.typeface = ResourcesCompat.getFont(this, R.font.sans_serif)
         events()
 
         detector = FaceDetector.Builder(applicationContext)
@@ -85,7 +85,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
                 .build()
 
         registerNetworkBroadcastForNougat()
-        editText.textSize = 24f
+        editText.textSize = 28f
 
     }
 
@@ -168,7 +168,7 @@ class HomeActivity : BaseActivity(), IHomeListener, ColorPickerDialogListener, N
                 showSoftKeyboard(editText)
             }
             binding.large.setOnClickListener {
-                editText.textSize = 24f
+                editText.textSize = 28f
                 dialog.dismiss()
                 showSoftKeyboard(editText)
             }

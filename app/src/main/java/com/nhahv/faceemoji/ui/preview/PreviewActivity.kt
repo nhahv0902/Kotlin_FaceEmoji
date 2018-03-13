@@ -1,7 +1,8 @@
 package com.nhahv.faceemoji.ui.preview
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
+import com.nhahv.faceemoji.R
 
 class PreviewActivity : AppCompatActivity() {
 
